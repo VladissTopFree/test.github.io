@@ -1,0 +1,1356 @@
+<!DOCTYPE html> 
+<html lang="ru"> 
+<head> 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Новый функционал v0.4.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Marvin';
+    src: url('16103.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  body {
+    background: #090909;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  .top-controls {
+    position: absolute;
+    top: 30px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .top-controls label {
+    font-size: 14px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  .top-controls input[type="number"] {
+    background: #1a1a1a;
+    border: 2px solid #ff007f;
+    color: #fff;
+    padding: 12px 25px;
+    font-size: 24px;
+    font-family: 'Lilita One', sans-serif;
+    border-radius: 12px;
+    text-align: center;
+    width: 250px;
+    outline: none;
+    box-shadow: 0 5px 15px rgba(255,0,127,0.3);
+    transition: all 0.3s;
+  }
+  .top-controls input[type="number"]:focus {
+    box-shadow: 0 5px 25px rgba(255,0,127,0.6);
+    transform: translateY(-2px);
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  #dropzone {
+    position: absolute;
+    top: 220px;
+    left: 20px; right: 20px; bottom: 20px;
+    border: 3px dashed #444;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    background: #111;
+  }
+  #dropzone:hover, #dropzone.dragover {
+    border-color: #ff007f;
+    background: rgba(255, 0, 127, 0.05);
+  }
+  #dropzone h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    pointer-events: none;
+    text-align: center;
+    color: #ff007f;
+    text-shadow: 0 0 15px rgba(255,0,127,0.4);
+  }
+  #dropzone p {
+    color: #aaa;
+    pointer-events: none;
+    font-size: 16px;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  input[type="file"] { display: none; }
+
+  #result-box {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+    width: 100%;
+    padding: 230px 20px 60px 20px;
+    box-sizing: border-box;
+  }
+
+  .title-count {
+    margin-bottom: 30px;
+    font-size: 28px;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,0,127,0.5);
+  }
+
+  #cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1600px;
+  }
+
+  .card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #111;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #333;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    transition: transform 0.3s;
+  }
+  .card-wrapper:hover {
+    transform: translateY(-5px);
+    border-color: #ff007f;
+  }
+
+  .card-price-input {
+    background: #1a1a1a;
+    border: 2px solid #ff007f;
+    color: #3bf83b;
+    padding: 10px;
+    font-size: 20px;
+    font-family: 'Lilita One', sans-serif;
+    border-radius: 8px;
+    text-align: center;
+    width: 80%;
+    margin-bottom: 15px;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(255,0,127,0.2);
+    transition: all 0.3s;
+  }
+  .card-price-input:focus {
+    box-shadow: 0 4px 20px rgba(255,0,127,0.5);
+    border-color: #fff;
+  }
+  
+  canvas {
+    max-width: 100%;
+    max-height: 50vh;
+    border-radius: 12px;
+    background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 20px 20px;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    padding: 12px 30px;
+    background: #ff007f;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+    text-align: center;
+  }
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 0, 127, 0.6);
+  }
+
+  .reset {
+    position: fixed;
+    top: 30px; right: 20px;
+    background: rgba(255,255,255,0.05);
+    color: #aaa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 40;
+    display: none;
+    transition: background 0.2s;
+  }
+  .reset:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+  #wizard-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #090909; z-index: 1000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .wizard-step { 
+    display: none; flex-direction: column; align-items: center; 
+    text-align: center; gap: 20px; width: 100%; max-width: 700px; padding: 20px;
+  }
+  .wizard-step.active { display: flex; animation: fadeIn 0.5s ease; }
+  .wizard-step h1 { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.4); margin-bottom: 20px; font-size: 32px; }
+  .wizard-step p { color: #aaa; font-size: 18px; margin-top: -10px; margin-bottom: 10px; }
+  #wizard-nick-input {
+    background: #1a1a1a; border: 2px solid #ff007f; color: #fff; padding: 15px 25px;
+    font-size: 30px; font-family: 'Marvin', 'Lilita One', sans-serif; border-radius: 12px;
+    text-align: center; width: 80%; outline: none; box-shadow: 0 5px 15px rgba(255,0,127,0.3);
+  }
+  #wizard-preview-canvas { max-width: 90%; max-height: 50vh; border-radius: 12px; border: 2px solid #ff007f; box-shadow: 0 0 30px rgba(255,0,127,0.4); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- НОВЫЙ БЛОК: Мастер настройки фона -->
+<div id="wizard-overlay">
+  <div id="wizard-step1" class="wizard-step active">
+    <h1>Шаг 1: Загрузи холст для фона</h1>
+    <p>Подготовь пустую комнату, с которой мы начнем работу.</p>
+    <div class="btn" id="wizard-upload-bg-btn" style="font-size: 20px; padding: 15px 40px;">Выбрать фон</div>
+    <input type="file" id="wizard-bg-input" accept="image/*" style="display:none;">
+  </div>
+  
+  <div id="wizard-step2" class="wizard-step">
+    <h1>Шаг 2: Введи свой ник</h1>
+    <p>Система сама добавит красивый 3D-текст и лучи на задний план.</p>
+    <input type="text" id="wizard-nick-input" placeholder="ARTZA DONATE" value="ARTZA DONATE" maxlength="16">
+    <div class="btn" id="wizard-next-btn2" style="font-size: 20px; padding: 15px 40px;">Добавить ник и лучи</div>
+  </div>
+  
+  <div id="wizard-step3" class="wizard-step">
+    <h1>Шаг 3: Фон готов!</h1>
+    <p>Мы сгенерировали лучи и добавили твой ник. Теперь загрузим акции.</p>
+    <canvas id="wizard-preview-canvas"></canvas>
+    <div class="btn" id="wizard-finish-btn" style="font-size: 20px; padding: 15px 40px;">Перейти к вырезке акций</div>
+  </div>
+</div>
+
+<div class="top-controls">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 15px;" id="old-bg-control">
+    <label style="margin:0;">Свой фон (опционально):</label>
+    <div class="btn" id="bgSelectBtn" style="font-size: 14px; padding: 10px 20px;">Выбрать фон</div>
+    <span id="bgName" style="font-size: 12px; color: #ff007f;">Фон не выбран</span>
+  </div>
+  <input type="file" id="bgInput" accept="image/*">
+</div>
+
+<div id="dropzone">
+  <h1>🚀 Ultimate Auto-Cutter</h1>
+  <p>Кликните или перетащите <b>ОДИН ИЛИ НЕСКОЛЬКО</b> скриншотов.<br>Вы можете добавлять файлы по очереди перед началом вырезки.</p>
+  <div id="staged-count" style="display:none; margin-top: 15px; color: #ffba00; font-size: 20px; font-weight: bold;">Добавлено файлов: 0</div>
+  <div class="btn" id="startProcessBtn" style="display:none; margin-top:20px; background: #00cc66; box-shadow: 0 4px 15px rgba(0, 204, 102, 0.4);">Начать вырезку!</div>
+</div>
+
+<!-- ДОБАВЛЕН атрибут multiple -->
+<input type="file" id="file" accept="image/*" multiple>
+
+<div id="result-box">
+  <div class="title-count">Найдено акций: <span id="card-count" style="color: #ff007f; font-weight: bold;">0</span></div>
+  <div id="cards-container"></div>
+</div>
+
+<div class="reset" id="resetBtn">✕ Загрузить другие фото</div>
+
+<script>
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("file");
+const resultBox = document.getElementById("result-box");
+const cardsContainer = document.getElementById("cards-container");
+const cardCountSpan = document.getElementById("card-count");
+const resetBtn = document.getElementById("resetBtn");
+
+const bgInput = document.getElementById("bgInput");
+const bgSelectBtn = document.getElementById("bgSelectBtn");
+const bgName = document.getElementById("bgName");
+let bgImageObj = null;
+
+// Глобальные переменные для обработки нескольких скриншотов
+let allGeneratedCards = [];
+let filesProcessed = 0;
+let filesToProcess = 0;
+let stagedFiles = [];
+
+const startProcessBtn = document.getElementById("startProcessBtn");
+const stagedCountDiv = document.getElementById("staged-count");
+
+bgSelectBtn.onclick = () => bgInput.click();
+bgInput.onchange = (e) => {
+  if (e.target.files[0]) {
+    const file = e.target.files[0];
+    bgName.innerText = file.name;
+    const img = new Image();
+    img.onload = () => { bgImageObj = img; };
+    img.src = URL.createObjectURL(file);
+  }
+};
+
+function updateDropzoneUI() {
+  if (stagedFiles.length > 0) {
+    stagedCountDiv.style.display = 'block';
+    stagedCountDiv.innerText = `Добавлено скриншотов: ${stagedFiles.length}`;
+    startProcessBtn.style.display = 'block';
+  } else {
+    stagedCountDiv.style.display = 'none';
+    startProcessBtn.style.display = 'none';
+  }
+}
+
+function handleFilesAdded(files) {
+  for(let i = 0; i < files.length; i++) {
+    stagedFiles.push(files[i]);
+  }
+  updateDropzoneUI();
+}
+
+dropzone.onclick = (e) => {
+  if(e.target === startProcessBtn) return;
+  fileInput.click();
+};
+dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add("dragover"); };
+dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+dropzone.ondrop = (e) => {
+  e.preventDefault(); dropzone.classList.remove("dragover");
+  if (e.dataTransfer.files.length > 0) handleFilesAdded(e.dataTransfer.files);
+};
+fileInput.onchange = (e) => {
+  if (e.target.files.length > 0) handleFilesAdded(e.target.files);
+};
+
+startProcessBtn.onclick = (e) => {
+  e.stopPropagation();
+  if (stagedFiles.length > 0) {
+    processImages(stagedFiles);
+  }
+};
+
+resetBtn.onclick = () => {
+  resultBox.style.display = 'none';
+  resetBtn.style.display = 'none';
+  dropzone.style.display = 'flex';
+  fileInput.value = '';
+  cardsContainer.innerHTML = '';
+  allGeneratedCards = [];
+  stagedFiles = [];
+  updateDropzoneUI();
+  cardCountSpan.innerText = '0';
+};
+
+// Функция инициализации пакетной загрузки
+function processImages(files) {
+  dropzone.style.display = 'none';
+  resultBox.style.display = 'flex';
+  resetBtn.style.display = 'block';
+  cardsContainer.innerHTML = '';
+  allGeneratedCards = [];
+  filesProcessed = 0;
+  filesToProcess = files.length;
+  cardCountSpan.innerText = '0';
+
+  for(let i = 0; i < files.length; i++) {
+    const img = new Image();
+    img.onload = () => runMagicLogic(img);
+    img.src = URL.createObjectURL(files[i]);
+  }
+}
+
+function autoReplacePrice(ctx, w, h) {
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+
+  let isWide = (w / h) > 0.85; 
+  let seedX = isWide ? Math.floor(w * 0.8) : Math.floor(w * 0.5);
+  let seedY = h - 1;
+  
+  while (seedY > 0) {
+    let i = (seedY * w + seedX) * 4;
+    if (d[i+3] > 200 && (d[i] > 60 || d[i+1] > 60 || d[i+2] > 60)) {
+      seedY = Math.max(0, seedY - 15); 
+      break;
+    }
+    seedY--;
+  }
+
+  let colors = {};
+  for(let y = seedY - 20; y <= seedY + 20; y++) {
+    for(let x = seedX - 20; x <= seedX + 20; x++) {
+      if (x>=0 && x<w && y>=0 && y<h) {
+        let i = (y*w + x)*4;
+        if (d[i+3] > 100) {
+          let cr=d[i], cg=d[i+1], cb=d[i+2];
+          if (cr > 60 || cg > 60 || cb > 60) {
+            let key = Math.round(cr/10)*10 + ',' + Math.round(cg/10)*10 + ',' + Math.round(cb/10)*10;
+            colors[key] = (colors[key] || 0) + 1;
+          }
+        }
+      }
+    }
+  }
+  
+  let maxCount = 0;
+  let bgKey = "";
+  for (let k in colors) {
+    if (colors[k] > maxCount) { maxCount = colors[k]; bgKey = k; }
+  }
+  if (!bgKey) return; 
+
+  let [qR, qG, qB] = bgKey.split(',').map(Number);
+  let sumR=0, sumG=0, sumB=0, sumC=0;
+  for(let y = seedY - 20; y <= seedY + 20; y++) {
+    for(let x = seedX - 20; x <= seedX + 20; x++) {
+      if (x>=0 && x<w && y>=0 && y<h) {
+        let i = (y*w + x)*4;
+        if (d[i+3] > 100) {
+          let cr=d[i], cg=d[i+1], cb=d[i+2];
+          if (Math.abs(cr-qR)<15 && Math.abs(cg-qG)<15 && Math.abs(cb-qB)<15) {
+            sumR += cr; sumG += cg; sumB += cb; sumC++;
+          }
+        }
+      }
+    }
+  }
+  let bgR = Math.round(sumR/sumC), bgG = Math.round(sumG/sumC), bgB = Math.round(sumB/sumC);
+
+  function isBg(x, y) {
+    if (x<0 || x>=w || y<0 || y>=h) return false;
+    let i = (y*w + x)*4;
+    if (d[i+3] < 128) return false;
+    return Math.abs(d[i]-bgR) < 30 && Math.abs(d[i+1]-bgG) < 30 && Math.abs(d[i+2]-bgB) < 30;
+  }
+
+  let isBgMask = new Uint8Array(w * h);
+  let stackX = [seedX], stackY = [seedY];
+  
+  if (!isBg(seedX, seedY)) {
+    let found = false;
+    for(let r=1; r<=25 && !found; r++) {
+      for(let dy=-r; dy<=r && !found; dy++) {
+        for(let dx=-r; dx<=r && !found; dx++) {
+          if(isBg(seedX+dx, seedY+dy)) {
+            stackX=[seedX+dx]; stackY=[seedY+dy];
+            found = true;
+          }
+        }
+      }
+    }
+  }
+
+  let head = 0;
+  while (head < stackX.length) {
+    let x = stackX[head];
+    let y = stackY[head];
+    head++;
+    let idx = y*w + x;
+    if (isBgMask[idx]) continue;
+    isBgMask[idx] = 1;
+    if (x+1 < w && !isBgMask[idx+1] && isBg(x+1, y)) { stackX.push(x+1); stackY.push(y); }
+    if (x-1 >= 0 && !isBgMask[idx-1] && isBg(x-1, y)) { stackX.push(x-1); stackY.push(y); }
+    if (y+1 < h && !isBgMask[idx+w] && isBg(x, y+1)) { stackX.push(x); stackY.push(y+1); }
+    if (y-1 >= 0 && !isBgMask[idx-w] && isBg(x, y-1)) { stackX.push(x); stackY.push(y-1); }
+  }
+
+  let minBoxX = w, maxBoxX = 0, minBoxY = h, maxBoxY = 0;
+  for(let y=0; y<h; y++) {
+    for(let x=0; x<w; x++) {
+      if (isBgMask[y*w + x]) {
+        if (x < minBoxX) minBoxX = x; if (x > maxBoxX) maxBoxX = x;
+        if (y < minBoxY) minBoxY = y; if (y > maxBoxY) maxBoxY = y;
+      }
+    }
+  }
+  if (minBoxX === w) return; 
+
+  let outsideMask = new Uint8Array(w * h);
+  let outStackX = [];
+  let outStackY = [];
+
+  for(let x = minBoxX; x <= maxBoxX; x++) {
+    if (!isBgMask[minBoxY*w + x]) { outStackX.push(x); outStackY.push(minBoxY); outsideMask[minBoxY*w + x] = 1; }
+    if (!isBgMask[maxBoxY*w + x]) { outStackX.push(x); outStackY.push(maxBoxY); outsideMask[maxBoxY*w + x] = 1; }
+  }
+  for(let y = minBoxY; y <= maxBoxY; y++) {
+    if (!isBgMask[y*w + minBoxX]) { outStackX.push(minBoxX); outStackY.push(y); outsideMask[y*w + minBoxX] = 1; }
+    if (!isBgMask[y*w + maxBoxX]) { outStackX.push(maxBoxX); outStackY.push(y); outsideMask[y*w + maxBoxX] = 1; }
+  }
+
+  let outHead = 0;
+  while (outHead < outStackX.length) {
+    let cx = outStackX[outHead];
+    let cy = outStackY[outHead];
+    outHead++;
+
+    if (cx+1 <= maxBoxX && !outsideMask[cy*w + cx+1] && !isBgMask[cy*w + cx+1]) { outsideMask[cy*w + cx+1] = 1; outStackX.push(cx+1); outStackY.push(cy); }
+    if (cx-1 >= minBoxX && !outsideMask[cy*w + cx-1] && !isBgMask[cy*w + cx-1]) { outsideMask[cy*w + cx-1] = 1; outStackX.push(cx-1); outStackY.push(cy); }
+    if (cy+1 <= maxBoxY && !outsideMask[(cy+1)*w + cx] && !isBgMask[(cy+1)*w + cx]) { outsideMask[(cy+1)*w + cx] = 1; outStackX.push(cx); outStackY.push(cy+1); }
+    if (cy-1 >= minBoxY && !outsideMask[(cy-1)*w + cx] && !isBgMask[(cy-1)*w + cx]) { outsideMask[(cy-1)*w + cx] = 1; outStackX.push(cx); outStackY.push(cy-1); }
+  }
+
+  for(let y = minBoxY; y <= maxBoxY; y++) {
+    for(let x = minBoxX; x <= maxBoxX; x++) {
+      let idx = y*w + x;
+      if (!outsideMask[idx]) {
+        let i = idx * 4;
+        d[i] = bgR; 
+        d[i+1] = bgG; 
+        d[i+2] = bgB;
+        d[i+3] = 255;
+      }
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+  let blankedImgData = ctx.getImageData(0, 0, w, h);
+
+  let boxHeight = maxBoxY - minBoxY;
+  let textY = minBoxY + boxHeight * 0.45; 
+  
+  let sumX = 0;
+  let validRows = 0;
+  let scanRange = Math.floor(boxHeight * 0.2);
+  
+  for(let y = Math.floor(textY - scanRange); y <= Math.floor(textY + scanRange); y++) {
+    let firstX = -1, lastX = -1;
+    if(y >= 0 && y < h) {
+      for(let x = minBoxX; x <= maxBoxX; x++) {
+        if(!outsideMask[y*w + x]) {
+          if(firstX === -1) firstX = x;
+          lastX = x;
+        }
+      }
+      if(firstX !== -1) {
+        sumX += (firstX + lastX) / 2;
+        validRows++;
+      }
+    }
+  }
+
+  let textX = validRows > 0 ? (sumX / validRows) : ((minBoxX + maxBoxX) / 2);
+  
+  return { blankedImgData, textX, textY, boxHeight };
+}
+
+function drawPriceText(ctx, w, h, textStr, info) {
+  if (!textStr || textStr.trim() === "") return;
+  let { textX, textY, boxHeight } = info;
+  
+  let fontSize = Math.floor(boxHeight * 0.60); 
+  if (fontSize < 22) fontSize = 22;
+
+  let isFree = textStr.trim().toUpperCase() === 'FREE';
+  let isNumber = !isNaN(textStr.trim()) && textStr.trim() !== '';
+  
+  let numStr = textStr.trim(); 
+  let symStr = isNumber ? " ₽" : ""; 
+  
+  let mainColor = isFree ? "#3bf83b" : "#ffffff";
+  
+  let fontNum = `normal ${fontSize}px 'Lilita One', 'Arial Black', Impact, sans-serif`;
+  let fontSym = `normal ${Math.max(fontSize - 4, 16)}px 'Rockwell', serif`;
+
+  ctx.font = fontNum;
+  let wNum = ctx.measureText(numStr).width;
+  
+  ctx.font = fontSym;
+  let wSym = ctx.measureText(symStr).width;
+  
+  let totalW = wNum + wSym;
+  
+  let startX = Math.round(textX - totalW / 2); 
+  let symStartX = Math.round(startX + wNum);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic'; 
+  ctx.lineWidth = Math.max(2, Math.floor(fontSize * 0.075)); 
+  ctx.strokeStyle = '#000000'; 
+  ctx.lineJoin = 'round';
+
+  let textBaseY = Math.round(textY + fontSize * 0.33);
+  let shadowOffset = Math.max(3, Math.floor(fontSize * 0.075) + 1);
+
+  const drawTextParts = (offsetX, offsetY, isFill, color) => {
+    ctx.font = fontNum;
+    if(isFill) { ctx.fillStyle = color; ctx.fillText(numStr, startX + offsetX, textBaseY + offsetY); }
+    else { ctx.strokeText(numStr, startX + offsetX, textBaseY + offsetY); }
+    
+    ctx.font = fontSym;
+    if(isFill) { ctx.fillStyle = color; ctx.fillText(symStr, symStartX + offsetX, textBaseY + offsetY); }
+    else { ctx.strokeText(symStr, symStartX + offsetX, textBaseY + offsetY); }
+  };
+
+  drawTextParts(0, shadowOffset, false, '');
+  drawTextParts(0, shadowOffset, true, '#000000');
+  
+  drawTextParts(0, 0, false, '');
+  drawTextParts(0, 0, true, mainColor);
+}
+
+// Старая логика вырезки
+function runMagicLogic(img) {
+  const w = img.width;
+  const h = img.height;
+  
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = w; tmpCanvas.height = h;
+  const tCtx = tmpCanvas.getContext('2d', { willReadFrequently: true });
+  tCtx.drawImage(img, 0, 0);
+  
+  const imgData = tCtx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+
+  const gray = new Uint8Array(w * h);
+  for(let i=0; i < w*h; i++) gray[i] = 0.299*d[i*4] + 0.587*d[i*4+1] + 0.114*d[i*4+2];
+
+  const edges = new Uint8Array(w * h);
+  const dilated = new Uint8Array(w * h);
+  
+  for(let y=1; y < h-1; y++) {
+    for(let x=1; x < w-1; x++) {
+      let i = y*w + x;
+      let p00 = gray[(y-1)*w+(x-1)], p02 = gray[(y-1)*w+(x+1)];
+      let p10 = gray[y*w+(x-1)],     p12 = gray[y*w+(x+1)];
+      let p20 = gray[(y+1)*w+(x-1)], p22 = gray[(y+1)*w+(x+1)];
+      let p01 = gray[(y-1)*w+x],     p21 = gray[(y+1)*w+x];
+
+      let gx = -p00 + p02 - 2*p10 + 2*p12 - p20 + p22;
+      let gy = -p00 - 2*p01 - p02 + p20 + 2*p21 + p22;
+      
+      if (Math.sqrt(gx*gx + gy*gy) > 35) edges[i] = 1; 
+    }
+  }
+
+  for(let y=2; y < h-2; y++) {
+    for(let x=2; x < w-2; x++) {
+      if (edges[y*w+x]) {
+        for(let dy=-1; dy<=1; dy++) {
+          for(let dx=-1; dx<=1; dx++) { dilated[(y+dy)*w+(x+dx)] = 1; }
+        }
+      }
+    }
+  }
+
+  const colorBins = {};
+  let sampleCount = 0;
+  const bandY = Math.floor(h * 0.10); const bandX = Math.floor(w * 0.10);
+
+  function sampleArea(startY, endY, startX, endX) {
+    for(let y = startY; y < endY; y += 4) {
+      for(let x = startX; x < endX; x += 4) {
+        let i = (y * w + x) * 4;
+        let r = Math.round(d[i]/32)*32, g = Math.round(d[i+1]/32)*32, b = Math.round(d[i+2]/32)*32;
+        let key = `${r},${g},${b}`;
+        colorBins[key] = (colorBins[key] || 0) + 1;
+        sampleCount++;
+      }
+    }
+  }
+
+  sampleArea(0, bandY, 0, w); sampleArea(h - bandY, h, 0, w); 
+  sampleArea(bandY, h - bandY, 0, bandX); sampleArea(bandY, h - bandY, w - bandX, w); 
+
+  const targetColors = [];
+  const threshold = sampleCount * 0.05; 
+  for (const [key, count] of Object.entries(colorBins)) {
+    if (count > threshold) targetColors.push(key.split(',').map(Number));
+  }
+
+  function isBgColor(r, g, b) {
+    for (let tc of targetColors) {
+      if (Math.sqrt((r-tc[0])**2 + (g-tc[1])**2 + (b-tc[2])**2) < 60) return true;
+    }
+    return false;
+  }
+
+  const visited = new Uint8Array(w * h);
+  const stackX = new Int32Array(w * h); const stackY = new Int32Array(w * h);
+  let stackLen = 0;
+
+  function tryEraseAndSpread(nx, ny) {
+    if (nx < 0 || nx >= w || ny < 0 || ny >= h) return;
+    let ni = ny * w + nx;
+    if (visited[ni]) return;
+    visited[ni] = 1;
+    let r = d[ni*4], g = d[ni*4+1], b = d[ni*4+2];
+    if (dilated[ni] && r < 110 && g < 110 && b < 145) return;
+    if (isBgColor(r, g, b)) {
+        d[ni*4+3] = 0; 
+        stackX[stackLen] = nx; stackY[stackLen] = ny; stackLen++;
+    }
+  }
+
+  for(let y=0; y < Math.min(h, 5); y++) {
+    for(let x=0; x < w; x++) { tryEraseAndSpread(x, y); tryEraseAndSpread(x, h-1-y); }
+  }
+  for(let y=0; y < h; y++) {
+    for(let x=0; x < Math.min(w, 5); x++) { tryEraseAndSpread(x, y); tryEraseAndSpread(w-1-x, y); }
+  }
+
+  while(stackLen > 0) {
+    stackLen--;
+    let x = stackX[stackLen], y = stackY[stackLen];
+    tryEraseAndSpread(x+1, y); tryEraseAndSpread(x-1, y); tryEraseAndSpread(x, y+1); tryEraseAndSpread(x, y-1);
+  }
+
+  const islandIDs = new Int32Array(w * h);
+  let currentID = 1;
+  const islandRects = [ {minY: h, maxY: 0, minX: w, maxX: 0} ];
+
+  for(let y=0; y < h; y++) {
+    for(let x=0; x < w; x++) {
+      let i = y * w + x;
+      if (d[i*4+3] > 0 && islandIDs[i] === 0) {
+        let minY = y, maxY = y, minX = x, maxX = x;
+        stackLen = 0;
+        stackX[stackLen] = x; stackY[stackLen] = y; stackLen++;
+        islandIDs[i] = currentID;
+
+        while(stackLen > 0) {
+          stackLen--;
+          let cx = stackX[stackLen], cy = stackY[stackLen];
+          if (cy < minY) minY = cy; if (cy > maxY) maxY = cy;
+          if (cx < minX) minX = cx; if (cx > maxX) maxX = cx;
+
+          const check = (nx, ny) => {
+            if(nx >= 0 && nx < w && ny >= 0 && ny < h) {
+              let ni = ny * w + nx;
+              if (d[ni*4+3] > 0 && islandIDs[ni] === 0) {
+                islandIDs[ni] = currentID;
+                stackX[stackLen] = nx; stackY[stackLen] = ny; stackLen++;
+              }
+            }
+          };
+          check(cx+1, cy); check(cx-1, cy); check(cx, cy+1); check(cx, cy-1);
+        }
+        islandRects.push({minY, maxY, minX, maxX});
+        currentID++;
+      }
+    }
+  }
+
+  for (let i = 0; i < w * h; i++) {
+    if (d[i*4+3] > 0) {
+      let id = islandIDs[i];
+      let rect = islandRects[id];
+      let objHeight = rect.maxY - rect.minY;
+      let touchesEdges = (rect.minX <= 5 || rect.maxX >= w - 6);
+      if (objHeight < h * 0.30 || touchesEdges) {
+        d[i*4+3] = 0; 
+        islandIDs[i] = 0; 
+      }
+    }
+  }
+
+  for(let pass = 0; pass < 2; pass++) {
+    const currentAlpha = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) currentAlpha[i] = d[i * 4 + 3];
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        let i = y * w + x;
+        if (currentAlpha[i] > 0 && (currentAlpha[i - 1] === 0 || currentAlpha[i + 1] === 0 || currentAlpha[i - w] === 0 || currentAlpha[i + w] === 0)) {
+          d[i * 4 + 3] = 0;
+        }
+      }
+    }
+  }
+
+  const blurAlpha = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) blurAlpha[i] = d[i * 4 + 3];
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let i = y * w + x;
+      if (blurAlpha[i] > 0 && (blurAlpha[i-1]===0 || blurAlpha[i+1]===0 || blurAlpha[i-w]===0 || blurAlpha[i+w]===0)) {
+        d[i * 4 + 3] = (blurAlpha[i] * 2 + blurAlpha[i-1] + blurAlpha[i+1] + blurAlpha[i-w] + blurAlpha[i+w]) / 6; 
+      }
+    }
+  }
+
+  const finalIslands = new Map();
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let i = y * w + x;
+      if (d[i*4+3] > 0 && islandIDs[i] > 0) {
+        let id = islandIDs[i];
+        if (!finalIslands.has(id)) {
+          finalIslands.set(id, { minX: x, maxX: x, minY: y, maxY: y });
+        } else {
+          let rect = finalIslands.get(id);
+          if (x < rect.minX) rect.minX = x; if (x > rect.maxX) rect.maxX = x;
+          if (y < rect.minY) rect.minY = y; if (y > rect.maxY) rect.maxY = y;
+        }
+      }
+    }
+  }
+
+  if (finalIslands.size === 0) {
+    checkBatchCompletion();
+    return;
+  }
+
+  const sortedIslands = Array.from(finalIslands.entries()).sort((a, b) => a[1].minX - b[1].minX);
+
+  sortedIslands.forEach(([id, rect], index) => {
+    let margin = 5; 
+    let minX = Math.max(0, rect.minX - margin); let minY = Math.max(0, rect.minY - margin);
+    let maxX = Math.min(w - 1, rect.maxX + margin); let maxY = Math.min(h - 1, rect.maxY + margin);
+    
+    let cW = maxX - minX + 1; let cH = maxY - minY + 1;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-wrapper';
+
+    const c = document.createElement('canvas');
+    c.width = cW; c.height = cH;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    
+    const layerData = cx.createImageData(cW, cH);
+    const ld = layerData.data;
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        let sourceIdx = y * w + x;
+        if (islandIDs[sourceIdx] === id) {
+          let destIdx = ((y - minY) * cW + (x - minX)) * 4;
+          ld[destIdx] = d[sourceIdx * 4]; ld[destIdx + 1] = d[sourceIdx * 4 + 1]; 
+          ld[destIdx + 2] = d[sourceIdx * 4 + 2]; ld[destIdx + 3] = d[sourceIdx * 4 + 3]; 
+        }
+      }
+    }
+    cx.putImageData(layerData, 0, 0);
+
+    let eraseResult = autoReplacePrice(cx, cW, cH);
+    let drawInfo = eraseResult || {
+        blankedImgData: cx.getImageData(0, 0, cW, cH),
+        textX: cW / 2,
+        textY: cH - cH * 0.1,
+        boxHeight: Math.max(20, cH * 0.15)
+    };
+
+    drawPriceText(cx, cW, cH, "FREE", drawInfo);
+
+    allGeneratedCards.push({ canvas: c, x: minX, y: minY, info: drawInfo });
+
+    const priceInput = document.createElement('input');
+    priceInput.type = 'text';
+    priceInput.className = 'card-price-input';
+    priceInput.value = 'FREE';
+    priceInput.maxLength = 12;
+    priceInput.oninput = (e) => {
+        let val = e.target.value;
+        if (val.trim().toUpperCase() === 'FREE') {
+            priceInput.style.color = '#3bf83b';
+        } else {
+            priceInput.style.color = '#fff';
+        }
+        cx.putImageData(drawInfo.blankedImgData, 0, 0);
+        drawPriceText(cx, cW, cH, val, drawInfo);
+        redrawFinalBackgrounds();
+    };
+
+    const btn = document.createElement('a');
+    btn.className = 'btn';
+    btn.innerText = `💾 Скачать акцию`;
+    btn.download = `offer_${Date.now()}_${index}.png`;
+    try {
+      btn.href = c.toDataURL("image/png");
+    } catch(e) {
+      btn.href = "javascript:void(0)";
+      btn.onclick = () => alert("Браузер заблокировал автоматическое скачивание. Сохраните картинку вручную (ПКМ -> Сохранить картинку как...)");
+    }
+
+    wrapper.appendChild(c);
+    wrapper.appendChild(priceInput);
+    wrapper.appendChild(btn);
+    cardsContainer.appendChild(wrapper);
+  });
+
+  checkBatchCompletion();
+}
+
+function checkBatchCompletion() {
+  filesProcessed++;
+  cardCountSpan.innerText = allGeneratedCards.length;
+
+  if (filesProcessed === filesToProcess) {
+    redrawFinalBackgrounds();
+  }
+}
+
+function redrawFinalBackgrounds() {
+  document.querySelectorAll('.final-result-wrapper').forEach(el => el.remove());
+  finalizeAndDrawBackground();
+}
+
+// НОВАЯ ФУНКЦИЯ: Отрисовка нескольких рядов (Grid-система) с умной ПАГИНАЦИЕЙ
+function finalizeAndDrawBackground() {
+  if (!bgImageObj || allGeneratedCards.length === 0) return;
+
+  let bgW = bgImageObj.width || bgImageObj.naturalWidth;
+  let bgH = bgImageObj.height || bgImageObj.naturalHeight;
+
+  let boxTop = bgH * 0.22;   
+  let boxBottom = bgH * 0.96;               
+  let boxLeft = bgW * 0.04;                 
+  let boxRight = bgW * 0.96;                
+
+  let boxW = boxRight - boxLeft;
+  let boxH = boxBottom - boxTop;
+
+  // Вспомогательная функция для расчета идеальной сетки для массива карточек
+  function calcLayout(cardsArray) {
+    let n = cardsArray.length;
+    let bestCols = 1;
+    let bestH = 0;
+    let bestRows = 1;
+    let cardRatios = cardsArray.map(item => item.canvas.width / item.canvas.height);
+
+    for (let cols = 1; cols <= n; cols++) {
+      let rows = Math.ceil(n / cols);
+      let maxRowRatioSum = 0;
+      for (let r = 0; r < rows; r++) {
+        let rowCards = cardRatios.slice(r * cols, (r + 1) * cols);
+        let rowRatioSum = rowCards.reduce((a, b) => a + b, 0);
+        if (rowRatioSum > maxRowRatioSum) maxRowRatioSum = rowRatioSum;
+      }
+      
+      let gapRatioX = 0.05;
+      let gapRatioY = 0.08;
+      
+      let maxH_width = boxW / (maxRowRatioSum + gapRatioX * (cols - 1));
+      let maxH_height = boxH / (rows + gapRatioY * (rows - 1));
+
+      let currentH = Math.min(maxH_width, maxH_height);
+
+      if (currentH > bestH) {
+        bestH = currentH;
+        bestCols = cols;
+        bestRows = rows;
+      }
+    }
+    return { bestH, bestCols, bestRows, gapX: bestH * 0.05, gapY: bestH * 0.08 };
+  }
+
+  // --- ЛОГИКА ОГРАНИЧЕНИЯ И РАЗБИЕНИЯ НА ЧАСТИ (ЧАНКИ) ---
+  let minH = boxH * 0.40; // Увеличен минимальный размер (теперь акции будут крупными, не менее 40% высоты)
+  let chunks = [];
+  let currentChunk = [];
+
+  for (let i = 0; i < allGeneratedCards.length; i++) {
+    let card = allGeneratedCards[i];
+    currentChunk.push(card);
+    
+    // Если при добавлении карточки общий размер всех акций на холсте становится слишком маленьким
+    if (currentChunk.length > 1) {
+      let layout = calcLayout(currentChunk);
+      // ЖЕСТКОЕ ПРАВИЛО: строк не больше 2, и высота не меньше 40%
+      if (layout.bestH < minH || layout.bestRows > 2) {
+        // Мы превысили лимит: выкидываем последнюю карточку обратно, сохраняем "собранную" страницу
+        currentChunk.pop();
+        chunks.push([...currentChunk]);
+        // И начинаем собирать следующую страницу уже с этой карточки
+        currentChunk = [card];
+      }
+    }
+  }
+  // Докидываем последние акции, если остались
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+
+  // --- ОТРИСОВКА ВСЕХ СТРАНИЦ ---
+  // Идём с конца, так как используем `insertBefore`, чтобы "Часть 1" оказалась на самом верху
+  for (let chunkIdx = chunks.length - 1; chunkIdx >= 0; chunkIdx--) {
+    let chunkCards = chunks[chunkIdx];
+    let layout = calcLayout(chunkCards);
+
+    let finalH = layout.bestH;
+    let gapX = layout.gapX;
+    let gapY = layout.gapY;
+    let bestRows = layout.bestRows;
+    let bestCols = layout.bestCols;
+
+    const finalWrapper = document.createElement('div');
+    finalWrapper.className = 'card-wrapper final-result-wrapper';
+    finalWrapper.style.width = '100%';
+    finalWrapper.style.maxWidth = '1000px'; 
+    finalWrapper.style.marginBottom = '40px';
+    finalWrapper.style.border = '2px solid #ff007f';
+
+    const title = document.createElement('div');
+    if (chunks.length > 1) {
+      title.innerText = `🌟 Итоговый результат (Часть ${chunkIdx + 1} из ${chunks.length})`;
+    } else {
+      title.innerText = "🌟 Итоговый результат с вашим фоном";
+    }
+    title.style.fontSize = "22px";
+    title.style.marginBottom = "15px";
+    title.style.color = "#fff";
+    title.style.fontWeight = "bold";
+
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = bgW; 
+    finalCanvas.height = bgH;
+    const fCtx = finalCanvas.getContext('2d');
+
+    fCtx.drawImage(bgImageObj, 0, 0);
+
+    let totalGridH = bestRows * finalH + (bestRows - 1) * gapY;
+    let startGridY = boxTop + (boxH - totalGridH) / 2;
+    let currentY = startGridY;
+
+    for (let r = 0; r < bestRows; r++) {
+      let rowCards = chunkCards.slice(r * bestCols, (r + 1) * bestCols);
+      if (rowCards.length === 0) break;
+
+      let rowWidth = rowCards.reduce((sum, item) => {
+        let ratio = item.canvas.width / item.canvas.height;
+        return sum + (finalH * ratio);
+      }, 0) + (rowCards.length - 1) * gapX;
+      
+      let startX = boxLeft + (boxW - rowWidth) / 2;
+      let currentX = startX;
+
+      rowCards.forEach(item => {
+        let ratio = item.canvas.width / item.canvas.height;
+        let drawW = finalH * ratio; 
+        let drawH = finalH;         
+        let drawY = currentY;       
+
+        fCtx.drawImage(item.canvas, currentX, drawY, drawW, drawH);
+        currentX += drawW + gapX;
+      });
+
+      currentY += finalH + gapY; 
+    }
+
+    const btn = document.createElement('a');
+    btn.className = 'btn';
+    if (chunks.length > 1) {
+      btn.innerText = `💾 Скачать итоговое (Часть ${chunkIdx + 1})`;
+      btn.download = `result_with_bg_part${chunkIdx + 1}.png`;
+    } else {
+      btn.innerText = `💾 Скачать итоговое изображение`;
+      btn.download = `result_with_bg.png`;
+    }
+
+    try {
+      btn.href = finalCanvas.toDataURL("image/png");
+    } catch(e) {
+      console.error("Canvas is tainted:", e);
+      btn.href = "javascript:void(0)";
+      btn.innerText = `⚠️ Сохранить вручную (ПКМ -> Сохранить)`;
+      btn.onclick = () => alert("Браузер заблокировал скачивание из-за политики безопасности. Нажмите на итоговую картинку правой кнопкой мыши и выберите 'Сохранить картинку как...'");
+    }
+
+    finalWrapper.appendChild(title);
+    finalWrapper.appendChild(finalCanvas);
+    finalWrapper.appendChild(btn);
+
+    // Вставляем текущий холст в самое начало, поэтому в конце "Часть 1" будет первой
+    cardsContainer.insertBefore(finalWrapper, cardsContainer.firstChild);
+  }
+}
+
+// === МАСТЕР ФОНА ===
+(function initWizard() {
+  const wizardOverlay = document.getElementById('wizard-overlay');
+  const step1 = document.getElementById('wizard-step1');
+  const step2 = document.getElementById('wizard-step2');
+  const step3 = document.getElementById('wizard-step3');
+  const wizardBgInput = document.getElementById('wizard-bg-input');
+  const wizardUploadBtn = document.getElementById('wizard-upload-bg-btn');
+  const wizardNextBtn2 = document.getElementById('wizard-next-btn2');
+  const wizardFinishBtn = document.getElementById('wizard-finish-btn');
+  const wizardNickInput = document.getElementById('wizard-nick-input');
+  const wizardPreviewCanvas = document.getElementById('wizard-preview-canvas');
+
+  document.querySelector('.top-controls').style.display = 'none';
+  document.getElementById('dropzone').style.display = 'none';
+
+  let uploadedBaseImg = new Image();
+  let finalBgCanvas = document.createElement('canvas');
+
+  wizardUploadBtn.onclick = () => wizardBgInput.click();
+
+  wizardBgInput.onchange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadedBaseImg.onload = () => {
+        step1.classList.remove('active');
+        step2.classList.add('active');
+      };
+      uploadedBaseImg.src = URL.createObjectURL(e.target.files[0]);
+    }
+  };
+
+  function drawFallbackRays(ctx, w, h) {
+    let cx = w / 2;
+    let cy = h / 2;
+    let radius = Math.sqrt(w*w + h*h); 
+    let numRays = 30; 
+    let angleStep = (Math.PI * 2) / numRays;
+    
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < numRays; i += 2) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, i * angleStep, (i + 1) * angleStep);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawWatermarks(ctx, text, w, h) {
+    ctx.save();
+    ctx.globalCompositeOperation = "overlay";
+    ctx.globalAlpha = 0.56;
+    ctx.fillStyle = "#ffffff";
+    
+    let baseFontSize = Math.floor(h * 0.022);
+    if (baseFontSize < 10) baseFontSize = 10;
+    
+    ctx.textBaseline = "middle";
+    
+    const watermarks = [
+      { x: w * 0.04, y: h * 0.18, scale: 1.50, align: "left" }, 
+      { x: w * 0.02, y: h * 0.55, scale: 0.60, align: "left" }, 
+      { x: w * 0.03, y: h * 0.88, scale: 1.10, align: "left" }, 
+      
+      { x: w * 0.96, y: h * 0.22, scale: 0.80, align: "right" }, 
+      { x: w * 0.98, y: h * 0.52, scale: 1.60, align: "right" }, 
+      { x: w * 0.97, y: h * 0.85, scale: 0.70, align: "right" }  
+    ];
+
+    watermarks.forEach(wm => {
+      ctx.save();
+      ctx.textAlign = wm.align; 
+      let currentFontSize = Math.floor(baseFontSize * wm.scale);
+      ctx.font = `${currentFontSize}px 'Marvin', 'Lilita One', sans-serif`;
+      
+      ctx.translate(wm.x, wm.y);
+      ctx.transform(1, 0, -0.10, 1, 0, 0); 
+      
+      ctx.fillText(text, 0, 0);
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек
+  function drawStars(ctx, starImg, w, h) {
+    ctx.save();
+    // Базовый размер звездочки: ~6% от высоты картинки
+    let baseSize = h * 0.06; 
+    
+    // Координаты звезд, чтобы они не сильно пересекались с водяными знаками
+    const stars = [
+      { x: w * 0.05, y: h * 0.08, scale: 0.7, rot: 0.2 },
+      { x: w * 0.12, y: h * 0.40, scale: 1.0, rot: -0.15 },
+      { x: w * 0.06, y: h * 0.70, scale: 0.6, rot: 0.5 },
+      
+      { x: w * 0.95, y: h * 0.10, scale: 0.8, rot: -0.3 },
+      { x: w * 0.85, y: h * 0.65, scale: 0.9, rot: 0.25 },
+      { x: w * 0.94, y: h * 0.75, scale: 0.7, rot: -0.1 }
+    ];
+
+    stars.forEach(s => {
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.rot);
+      
+      let sWidth = baseSize * s.scale;
+      let sHeight = (starImg.height / starImg.width) * sWidth; // Сохраняем пропорции картинки
+      
+      ctx.drawImage(starImg, -sWidth / 2, -sHeight / 2, sWidth, sHeight);
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  function drawBeautifulNick(ctx, text, w, h) {
+    let fontSize = Math.floor(h * 0.12);
+    if (fontSize < 30) fontSize = 30;
+
+    let x = w / 2;
+    let y = h * 0.06 + (fontSize / 2); 
+
+    let whiteStrokeW = fontSize * 0.18;
+    let purpleStrokeW = fontSize * 0.12;
+    let magentaStrokeW = fontSize * 0.0154;
+    let yellowStrokeW = fontSize * 0.06;
+
+    let shadowDepth = Math.max(1, Math.floor(fontSize * 0.10));
+
+    let textCanvas = document.createElement('canvas');
+    textCanvas.width = w;
+    textCanvas.height = h;
+    let txCtx = textCanvas.getContext('2d');
+
+    txCtx.textAlign = "center";
+    txCtx.textBaseline = "middle";
+    txCtx.font = `${fontSize}px 'Marvin', 'Lilita One', sans-serif`;
+    txCtx.lineJoin = "round";
+    txCtx.lineCap = "round";
+
+    txCtx.save();
+    txCtx.translate(x, y);
+    txCtx.transform(1, 0, -0.10, 1, 0, 0); 
+
+    txCtx.lineWidth = whiteStrokeW;
+    txCtx.strokeStyle = "#ffffff";
+    for (let i = shadowDepth; i >= 0; i--) { txCtx.strokeText(text, 0, i); }
+
+    txCtx.lineWidth = purpleStrokeW;
+    txCtx.strokeStyle = "#42003d";
+    for (let i = shadowDepth; i >= 0; i--) { txCtx.strokeText(text, 0, i); }
+
+    txCtx.lineWidth = magentaStrokeW;
+    txCtx.strokeStyle = "#61005a";
+    for (let i = shadowDepth; i >= 0; i--) { txCtx.strokeText(text, 0, i); }
+    
+    txCtx.restore();
+
+    let tempCanvas = document.createElement('canvas');
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    let tCtx = tempCanvas.getContext('2d');
+
+    tCtx.textAlign = "center";
+    tCtx.textBaseline = "middle";
+    tCtx.font = `${fontSize}px 'Marvin', 'Lilita One', sans-serif`;
+
+    tCtx.save();
+    tCtx.translate(x, y);
+    tCtx.transform(1, 0, -0.10, 1, 0, 0); 
+
+    let grad = tCtx.createLinearGradient(0, -fontSize * 0.4, 0, fontSize * 0.4);
+    grad.addColorStop(0, "#ffba00");
+    grad.addColorStop(0.48, "#fcff00");
+    grad.addColorStop(1, "#ffba00");
+    tCtx.fillStyle = grad;
+    tCtx.fillText(text, 0, 0);
+
+    tCtx.globalCompositeOperation = "source-atop";
+    tCtx.lineWidth = yellowStrokeW;
+    tCtx.strokeStyle = "#fcff00";
+    tCtx.lineJoin = "round";
+    tCtx.strokeText(text, 0, 0);
+    
+    tCtx.restore();
+
+    txCtx.drawImage(tempCanvas, 0, 0);
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; 
+    ctx.shadowBlur = 21;                    
+    ctx.shadowOffsetX = 0;                  
+    ctx.shadowOffsetY = 16;                 
+    
+    ctx.drawImage(textCanvas, 0, 0);
+    ctx.restore();
+  }
+
+  // Удобная загрузка картинок
+  const loadImage = (src) => new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+
+  wizardNextBtn2.onclick = async () => {
+    let nick = wizardNickInput.value.trim().substring(0, 16) || "ARTZA DONATE";
+    let w = uploadedBaseImg.width;
+    let h = uploadedBaseImg.height;
+    
+    finalBgCanvas.width = w;
+    finalBgCanvas.height = h;
+    let ctx = finalBgCanvas.getContext('2d');
+    
+    ctx.drawImage(uploadedBaseImg, 0, 0, w, h);
+    
+    // Загружаем обе картинки (лучи и звездочки) одновременно
+    const [luchImg, starImg] = await Promise.all([
+      loadImage('Luch.png'),
+      loadImage('Star.png')
+    ]);
+
+    // Рисуем лучи
+    if (luchImg) {
+      ctx.drawImage(luchImg, 0, 0, w, h);
+    } else {
+      drawFallbackRays(ctx, w, h);
+    }
+
+    // Рисуем водяные знаки
+    drawWatermarks(ctx, nick, w, h); 
+
+    // Рисуем звездочки
+    if (starImg) {
+      drawStars(ctx, starImg, w, h);
+    }
+
+    // Рисуем красивый центральный ник
+    drawBeautifulNick(ctx, nick, w, h);
+    showStep3();
+  };
+
+  function showStep3() {
+    wizardPreviewCanvas.width = finalBgCanvas.width;
+    wizardPreviewCanvas.height = finalBgCanvas.height;
+    wizardPreviewCanvas.getContext('2d').drawImage(finalBgCanvas, 0, 0);
+    
+    step2.classList.remove('active');
+    step3.classList.add('active');
+  }
+
+  wizardFinishBtn.onclick = () => {
+    bgImageObj = finalBgCanvas;
+    document.getElementById('bgName').innerText = "✅ Фон с ником и лучами сгенерирован";
+    
+    document.getElementById('old-bg-control').style.display = 'none';
+
+    wizardOverlay.style.display = 'none';
+    document.querySelector('.top-controls').style.display = 'flex';
+    document.getElementById('dropzone').style.display = 'flex';
+  };
+})();
+</script>
+</body>
+</html>
