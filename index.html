@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.4.7</title>
+<title>Новый функционал v0.4.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1171,21 +1171,25 @@ function finalizeAndDrawBackground() {
     ctx.restore();
   }
 
-  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек
+  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (теперь их 8 и они крупнее)
   function drawStars(ctx, starImg, w, h) {
     ctx.save();
-    // Базовый размер звездочки: ~6% от высоты картинки
-    let baseSize = h * 0.06; 
+    // Увеличили базовый размер звездочки (было 0.06, стало 0.09 от высоты экрана)
+    let baseSize = h * 0.09; 
     
-    // Координаты звезд, чтобы они не сильно пересекались с водяными знаками
+    // По 4 звезды с каждой стороны, раскиданы между водяными знаками
     const stars = [
-      { x: w * 0.05, y: h * 0.08, scale: 0.7, rot: 0.2 },
-      { x: w * 0.12, y: h * 0.40, scale: 1.0, rot: -0.15 },
-      { x: w * 0.06, y: h * 0.70, scale: 0.6, rot: 0.5 },
+      // Левая сторона (4 звезды)
+      { x: w * 0.08, y: h * 0.10, scale: 0.9, rot: 0.2 },
+      { x: w * 0.15, y: h * 0.35, scale: 1.2, rot: -0.15 },
+      { x: w * 0.05, y: h * 0.65, scale: 0.8, rot: 0.5 },
+      { x: w * 0.12, y: h * 0.85, scale: 1.1, rot: -0.2 },
       
-      { x: w * 0.95, y: h * 0.10, scale: 0.8, rot: -0.3 },
-      { x: w * 0.85, y: h * 0.65, scale: 0.9, rot: 0.25 },
-      { x: w * 0.94, y: h * 0.75, scale: 0.7, rot: -0.1 }
+      // Правая сторона (4 звезды)
+      { x: w * 0.92, y: h * 0.12, scale: 1.0, rot: -0.3 },
+      { x: w * 0.85, y: h * 0.38, scale: 1.1, rot: 0.25 },
+      { x: w * 0.95, y: h * 0.62, scale: 0.85, rot: -0.1 },
+      { x: w * 0.88, y: h * 0.88, scale: 1.2, rot: 0.15 }
     ];
 
     stars.forEach(s => {
@@ -1194,7 +1198,7 @@ function finalizeAndDrawBackground() {
       ctx.rotate(s.rot);
       
       let sWidth = baseSize * s.scale;
-      let sHeight = (starImg.height / starImg.width) * sWidth; // Сохраняем пропорции картинки
+      let sHeight = (starImg.height / starImg.width) * sWidth; // Сохраняем пропорции
       
       ctx.drawImage(starImg, -sWidth / 2, -sHeight / 2, sWidth, sHeight);
       ctx.restore();
@@ -1305,7 +1309,7 @@ function finalizeAndDrawBackground() {
     
     ctx.drawImage(uploadedBaseImg, 0, 0, w, h);
     
-    // Загружаем обе картинки (лучи и звездочки) одновременно
+    // Загружаем обе картинки (вернули локальный путь Star.png)
     const [luchImg, starImg] = await Promise.all([
       loadImage('Luch.png'),
       loadImage('Star.png')
