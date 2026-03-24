@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.4.8</title>
+<title>Новый функционал v0.4.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1174,8 +1174,8 @@ function finalizeAndDrawBackground() {
   // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (теперь их 8 и они крупнее)
   function drawStars(ctx, starImg, w, h) {
     ctx.save();
-    // Увеличили базовый размер звездочки (было 0.06, стало 0.09 от высоты экрана)
-    let baseSize = h * 0.09; 
+    // Увеличили базовый размер звездочки в 2 раза (было 0.09, стало 0.18 от высоты экрана)
+    let baseSize = h * 0.18; 
     
     // По 4 звезды с каждой стороны, раскиданы между водяными знаками
     const stars = [
@@ -1315,9 +1315,13 @@ function finalizeAndDrawBackground() {
       loadImage('Star.png')
     ]);
 
-    // Рисуем лучи
+    // Рисуем лучи (увеличены в 4 раза и отцентрированы)
     if (luchImg) {
-      ctx.drawImage(luchImg, 0, 0, w, h);
+      let luchW = w * 4;
+      let luchH = h * 4;
+      let luchX = -(luchW - w) / 2;
+      let luchY = -(luchH - h) / 2;
+      ctx.drawImage(luchImg, luchX, luchY, luchW, luchH);
     } else {
       drawFallbackRays(ctx, w, h);
     }
