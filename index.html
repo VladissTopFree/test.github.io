@@ -1332,7 +1332,6 @@ function finalizeAndDrawBackground() {
     // Рисуем лучи (увеличены в 4 раза и отцентрированы)
     if (luchImg) {
       ctx.save();
-      ctx.globalAlpha = 0.86; // Делаем лучи прозрачнее на 65% (остается 35% видимости)
       ctx.globalCompositeOperation = "overlay"; // Режим наложения "Перекрытие"
       let luchW = w * 2;
       let luchH = h * 2;
