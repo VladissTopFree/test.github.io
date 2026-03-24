@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.5.0</title>
+<title>Новый функционал v0.5.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1174,6 +1174,10 @@ function finalizeAndDrawBackground() {
   // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (теперь их 8 и они крупнее)
   function drawStars(ctx, starImg, w, h) {
     ctx.save();
+    
+    // Добавляем прозрачность: делаем их прозрачнее на 65% (оставляем 35% видимости)
+    ctx.globalAlpha = 0.35; 
+    
     // Увеличили базовый размер звездочки в 2 раза (было 0.09, стало 0.18 от высоты экрана)
     let baseSize = h * 0.18; 
     
@@ -1317,8 +1321,8 @@ function finalizeAndDrawBackground() {
 
     // Рисуем лучи (увеличены в 4 раза и отцентрированы)
     if (luchImg) {
-      let luchW = w * 2;
-      let luchH = h * 2;
+      let luchW = w * 4;
+      let luchH = h * 4;
       let luchX = -(luchW - w) / 2;
       let luchY = -(luchH - h) / 2;
       ctx.drawImage(luchImg, luchX, luchY, luchW, luchH);
