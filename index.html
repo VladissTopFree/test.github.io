@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.1</title>
+<title>Новый функционал v0.6.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -237,7 +237,6 @@
 </head>
 <body>
 
-<!-- НОВЫЙ БЛОК: Мастер настройки фона -->
 <div id="wizard-overlay">
   <div id="wizard-step1" class="wizard-step active">
     <h1>Шаг 1: Загрузи холст для фона</h1>
@@ -277,7 +276,6 @@
   <div class="btn" id="startProcessBtn" style="display:none; margin-top:20px; background: #00cc66; box-shadow: 0 4px 15px rgba(0, 204, 102, 0.4);">Начать вырезку!</div>
 </div>
 
-<!-- ДОБАВЛЕН атрибут multiple -->
 <input type="file" id="file" accept="image/*" multiple>
 
 <div id="result-box">
@@ -300,7 +298,6 @@ const bgSelectBtn = document.getElementById("bgSelectBtn");
 const bgName = document.getElementById("bgName");
 let bgImageObj = null;
 
-// Глобальные переменные для обработки нескольких скриншотов
 let allGeneratedCards = [];
 let filesProcessed = 0;
 let filesToProcess = 0;
@@ -371,7 +368,6 @@ resetBtn.onclick = () => {
   cardCountSpan.innerText = '0';
 };
 
-// Функция инициализации пакетной загрузки
 function processImages(files) {
   dropzone.style.display = 'none';
   resultBox.style.display = 'flex';
@@ -619,7 +615,6 @@ function drawPriceText(ctx, w, h, textStr, info) {
   drawTextParts(0, 0, true, mainColor);
 }
 
-// Старая логика вырезки
 function runMagicLogic(img) {
   const w = img.width;
   const h = img.height;
@@ -861,7 +856,6 @@ function runMagicLogic(img) {
 
     drawPriceText(cx, cW, cH, "FREE", drawInfo);
 
-    // СОХРАНЯЕМ ОТСТУПЫ для точной обводки в финальном рендере
     allGeneratedCards.push({ 
         canvas: c, 
         x: minX, 
@@ -926,7 +920,6 @@ function redrawFinalBackgrounds() {
   finalizeAndDrawBackground();
 }
 
-// НОВАЯ ФУНКЦИЯ: Отрисовка нескольких рядов (Grid-система) с умной ПАГИНАЦИЕЙ
 function finalizeAndDrawBackground() {
   if (!bgImageObj || allGeneratedCards.length === 0) return;
 
@@ -941,7 +934,6 @@ function finalizeAndDrawBackground() {
   let boxW = boxRight - boxLeft;
   let boxH = boxBottom - boxTop;
 
-  // Вспомогательная функция для расчета идеальной сетки для массива карточек
   function calcLayout(cardsArray) {
     let n = cardsArray.length;
     let bestCols = 1;
@@ -975,8 +967,7 @@ function finalizeAndDrawBackground() {
     return { bestH, bestCols, bestRows, gapX: bestH * 0.05, gapY: bestH * 0.08 };
   }
 
-  // --- ЛОГИКА ОГРАНИЧЕНИЯ И РАЗБИЕНИЯ НА ЧАСТИ (ЧАНКИ) ---
-  let minH = boxH * 0.40; // Увеличен минимальный размер (теперь акции будут крупными, не менее 40% высоты)
+  let minH = boxH * 0.40; 
   let chunks = [];
   let currentChunk = [];
 
@@ -984,26 +975,19 @@ function finalizeAndDrawBackground() {
     let card = allGeneratedCards[i];
     currentChunk.push(card);
     
-    // Если при добавлении карточки общий размер всех акций на холсте становится слишком маленьким
     if (currentChunk.length > 1) {
       let layout = calcLayout(currentChunk);
-      // ЖЕСТКОЕ ПРАВИЛО: строк не больше 2, и высота не меньше 40%
       if (layout.bestH < minH || layout.bestRows > 2) {
-        // Мы превысили лимит: выкидываем последнюю карточку обратно, сохраняем "собранную" страницу
         currentChunk.pop();
         chunks.push([...currentChunk]);
-        // И начинаем собирать следующую страницу уже с этой карточки
         currentChunk = [card];
       }
     }
   }
-  // Докидываем последние акции, если остались
   if (currentChunk.length > 0) {
     chunks.push(currentChunk);
   }
 
-  // --- ОТРИСОВКА ВСЕХ СТРАНИЦ ---
-  // Идём с конца, так как используем `insertBefore`, чтобы "Часть 1" оказалась на самом верху
   for (let chunkIdx = chunks.length - 1; chunkIdx >= 0; chunkIdx--) {
     let chunkCards = chunks[chunkIdx];
     let layout = calcLayout(chunkCards);
@@ -1061,8 +1045,6 @@ function finalizeAndDrawBackground() {
         let drawH = finalH;         
         let drawY = currentY;       
 
-        // --- ОБНОВЛЕННАЯ ЛОГИКА ОБВОДКИ И ТЕНИ ---
-        // 1. Создаем белый силуэт акции (закрашиваем только непрозрачные пиксели)
         const silCanvas = document.createElement('canvas');
         silCanvas.width = item.canvas.width;
         silCanvas.height = item.canvas.height;
@@ -1072,16 +1054,14 @@ function finalizeAndDrawBackground() {
         silCtx.fillStyle = '#ffffff';
         silCtx.fillRect(0, 0, silCanvas.width, silCanvas.height);
 
-        const outlineSize = 3; // Толщина обводки
-        const steps = 12;      // Качество (плотность) обводки
+        const outlineSize = 4; 
+        const steps = 12;      
         
-        // Создаем временный холст для готовой акции с обводкой (чтобы тень легла равномерно 1 раз)
         const combinedCanvas = document.createElement('canvas');
         combinedCanvas.width = drawW + outlineSize * 2;
         combinedCanvas.height = drawH + outlineSize * 2;
         const combCtx = combinedCanvas.getContext('2d');
 
-        // 2. Рисуем силуэт со сдвигом по кругу на временном холсте
         for (let i = 0; i < steps; i++) {
           let angle = (i / steps) * Math.PI * 2;
           let ox = Math.cos(angle) * outlineSize;
@@ -1089,19 +1069,16 @@ function finalizeAndDrawBackground() {
           combCtx.drawImage(silCanvas, outlineSize + ox, outlineSize + oy, drawW, drawH);
         }
 
-        // 3. Поверх белой обводки рисуем саму вырезанную акцию
         combCtx.drawImage(item.canvas, outlineSize, outlineSize, drawW, drawH);
 
-        // 4. Переносим готовую акцию на главный холст, добавляя красивую тень!
         fCtx.save();
-        fCtx.shadowColor = "rgba(0, 0, 0, 0.3)"; // Прозрачная черная тень
-        fCtx.shadowBlur = 21;                    // Размытие (как у ника)
-        fCtx.shadowOffsetX = 0;                  // Сдвиг по X
-        fCtx.shadowOffsetY = 16;                 // Сдвиг по Y (как у ника)
+        fCtx.shadowColor = "rgba(0, 0, 0, 0.3)"; 
+        fCtx.shadowBlur = 21;                    
+        fCtx.shadowOffsetX = 0;                  
+        fCtx.shadowOffsetY = 16;                 
         
         fCtx.drawImage(combinedCanvas, currentX - outlineSize, drawY - outlineSize);
         fCtx.restore();
-        // --- КОНЕЦ ОБНОВЛЕННОЙ ЛОГИКИ ---
 
         currentX += drawW + gapX;
       });
@@ -1132,12 +1109,10 @@ function finalizeAndDrawBackground() {
     finalWrapper.appendChild(finalCanvas);
     finalWrapper.appendChild(btn);
 
-    // Вставляем текущий холст в самое начало, поэтому в конце "Часть 1" будет первой
     cardsContainer.insertBefore(finalWrapper, cardsContainer.firstChild);
   }
 }
 
-// === МАСТЕР ФОНА ===
 (function initWizard() {
   const wizardOverlay = document.getElementById('wizard-overlay');
   const step1 = document.getElementById('wizard-step1');
@@ -1201,11 +1176,11 @@ function finalizeAndDrawBackground() {
     
     const watermarks = [
       { x: w * 0.04, y: h * 0.18, scale: 1.50, align: "left" }, 
-      { x: w * 0.02, y: h * 0.43, scale: 0.60, align: "left" }, // Подняли средний левый ник
+      { x: w * 0.02, y: h * 0.43, scale: 0.60, align: "left" }, 
       { x: w * 0.03, y: h * 0.88, scale: 1.10, align: "left" }, 
       
       { x: w * 0.96, y: h * 0.22, scale: 0.80, align: "right" }, 
-      { x: w * 0.98, y: h * 0.45, scale: 1.60, align: "right" }, // Подняли средний правый ник
+      { x: w * 0.98, y: h * 0.45, scale: 1.60, align: "right" }, 
       { x: w * 0.97, y: h * 0.85, scale: 0.70, align: "right" }  
     ];
 
@@ -1224,32 +1199,25 @@ function finalizeAndDrawBackground() {
     ctx.restore();
   }
 
-  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (с динамическим блюром)
   function drawStars(ctx, starImg, w, h) {
     ctx.save();
     
-    // Динамический блюр в зависимости от размера картинки (чтобы было видно на больших разрешениях)
-    // Например, для 1080p блюр будет около 8-9 пикселей
     let blurValue = Math.max(6, Math.floor(h * 0.008)); 
     ctx.filter = `blur(${blurValue}px)`;
     ctx.globalCompositeOperation = "overlay";
     
-    // Увеличили базовый размер звездочки в 2 раза
     let baseSize = h * 0.18; 
     
-    // По 4 звезды с каждой стороны, раскиданы между водяными знаками
     const stars = [
-      // Левая сторона (4 звезды)
       { x: w * 0.08, y: h * 0.10, scale: 0.9, rot: 0.2 },
       { x: w * 0.15, y: h * 0.35, scale: 1.2, rot: -0.15 },
       { x: w * 0.05, y: h * 0.65, scale: 0.8, rot: 0.5 },
-      { x: w * 0.19, y: h * 0.98, scale: 1.1, rot: -0.2 }, // Сдвинули ниже и правее
+      { x: w * 0.19, y: h * 0.98, scale: 1.1, rot: -0.2 }, 
       
-      // Правая сторона (4 звезды)
       { x: w * 0.92, y: h * 0.12, scale: 1.0, rot: -0.3 },
       { x: w * 0.85, y: h * 0.38, scale: 1.1, rot: 0.25 },
       { x: w * 0.95, y: h * 0.62, scale: 0.85, rot: -0.1 },
-      { x: w * 0.87, y: h * 0.99, scale: 1.2, rot: 0.15 } // Сдвинули ниже
+      { x: w * 0.87, y: h * 0.99, scale: 1.2, rot: 0.15 }
     ];
 
     stars.forEach(s => {
@@ -1258,7 +1226,7 @@ function finalizeAndDrawBackground() {
       ctx.rotate(s.rot);
       
       let sWidth = baseSize * s.scale;
-      let sHeight = (starImg.height / starImg.width) * sWidth; // Сохраняем пропорции
+      let sHeight = (starImg.height / starImg.width) * sWidth; 
       
       ctx.drawImage(starImg, -sWidth / 2, -sHeight / 2, sWidth, sHeight);
       ctx.restore();
@@ -1349,7 +1317,6 @@ function finalizeAndDrawBackground() {
     ctx.restore();
   }
 
-  // Удобная загрузка картинок
   const loadImage = (src) => new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -1369,16 +1336,14 @@ function finalizeAndDrawBackground() {
     
     ctx.drawImage(uploadedBaseImg, 0, 0, w, h);
     
-    // Загружаем обе картинки (вернули локальный путь Star.png)
     const [luchImg, starImg] = await Promise.all([
       loadImage('Luch.png'),
       loadImage('Star.png')
     ]);
 
-    // Рисуем лучи (увеличены в 4 раза и отцентрированы)
     if (luchImg) {
       ctx.save();
-      ctx.globalCompositeOperation = "overlay"; // Режим наложения "Перекрытие"
+      ctx.globalCompositeOperation = "overlay"; 
       let luchW = w * 2;
       let luchH = h * 2;
       let luchX = -(luchW - w) / 2;
@@ -1389,15 +1354,12 @@ function finalizeAndDrawBackground() {
       drawFallbackRays(ctx, w, h);
     }
 
-    // Рисуем водяные знаки
     drawWatermarks(ctx, nick, w, h); 
 
-    // Рисуем звездочки
     if (starImg) {
       drawStars(ctx, starImg, w, h);
     }
 
-    // Рисуем красивый центральный ник
     drawBeautifulNick(ctx, nick, w, h);
     showStep3();
   };
