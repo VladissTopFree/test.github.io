@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.5.2</title>
+<title>Новый функционал v0.5.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1148,11 +1148,11 @@ function finalizeAndDrawBackground() {
     
     const watermarks = [
       { x: w * 0.04, y: h * 0.18, scale: 1.50, align: "left" }, 
-      { x: w * 0.02, y: h * 0.55, scale: 0.60, align: "left" }, 
+      { x: w * 0.02, y: h * 0.43, scale: 0.60, align: "left" }, // Подняли средний левый ник
       { x: w * 0.03, y: h * 0.88, scale: 1.10, align: "left" }, 
       
       { x: w * 0.96, y: h * 0.22, scale: 0.80, align: "right" }, 
-      { x: w * 0.98, y: h * 0.52, scale: 1.60, align: "right" }, 
+      { x: w * 0.98, y: h * 0.40, scale: 1.60, align: "right" }, // Подняли средний правый ник
       { x: w * 0.97, y: h * 0.85, scale: 0.70, align: "right" }  
     ];
 
@@ -1171,11 +1171,14 @@ function finalizeAndDrawBackground() {
     ctx.restore();
   }
 
-  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (теперь их 8 и они крупнее)
+  // НОВАЯ ФУНКЦИЯ: Отрисовка звездочек (теперь с блюром и новыми позициями)
   function drawStars(ctx, starImg, w, h) {
     ctx.save();
     
-    // Увеличили базовый размер звездочки в 2 раза (было 0.09, стало 0.18 от высоты экрана)
+    // Добавляем легкое размытие (блюр)
+    ctx.filter = 'blur(3px)';
+    
+    // Увеличили базовый размер звездочки в 2 раза
     let baseSize = h * 0.18; 
     
     // По 4 звезды с каждой стороны, раскиданы между водяными знаками
@@ -1184,13 +1187,13 @@ function finalizeAndDrawBackground() {
       { x: w * 0.08, y: h * 0.10, scale: 0.9, rot: 0.2 },
       { x: w * 0.15, y: h * 0.35, scale: 1.2, rot: -0.15 },
       { x: w * 0.05, y: h * 0.65, scale: 0.8, rot: 0.5 },
-      { x: w * 0.12, y: h * 0.85, scale: 1.1, rot: -0.2 },
+      { x: w * 0.19, y: h * 0.93, scale: 1.1, rot: -0.2 }, // Сдвинули ниже и правее
       
       // Правая сторона (4 звезды)
       { x: w * 0.92, y: h * 0.12, scale: 1.0, rot: -0.3 },
       { x: w * 0.85, y: h * 0.38, scale: 1.1, rot: 0.25 },
       { x: w * 0.95, y: h * 0.62, scale: 0.85, rot: -0.1 },
-      { x: w * 0.88, y: h * 0.88, scale: 1.2, rot: 0.15 }
+      { x: w * 0.87, y: h * 0.96, scale: 1.2, rot: 0.15 } // Сдвинули ниже
     ];
 
     stars.forEach(s => {
