@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.5.3</title>
+<title>Новый функционал v0.5.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1152,7 +1152,7 @@ function finalizeAndDrawBackground() {
       { x: w * 0.03, y: h * 0.88, scale: 1.10, align: "left" }, 
       
       { x: w * 0.96, y: h * 0.22, scale: 0.80, align: "right" }, 
-      { x: w * 0.98, y: h * 0.40, scale: 1.60, align: "right" }, // Подняли средний правый ник
+      { x: w * 0.98, y: h * 0.45, scale: 1.60, align: "right" }, // Подняли средний правый ник
       { x: w * 0.97, y: h * 0.85, scale: 0.70, align: "right" }  
     ];
 
@@ -1176,7 +1176,7 @@ function finalizeAndDrawBackground() {
     ctx.save();
     
     // Добавляем легкое размытие (блюр)
-    ctx.filter = 'blur(3px)';
+    ctx.filter = 'blur(9px)';
     
     // Увеличили базовый размер звездочки в 2 раза
     let baseSize = h * 0.18; 
@@ -1322,7 +1322,7 @@ function finalizeAndDrawBackground() {
     // Рисуем лучи (увеличены в 4 раза и отцентрированы)
     if (luchImg) {
       ctx.save();
-      ctx.globalAlpha = 0.46; // Делаем лучи прозрачнее на 65% (остается 35% видимости)
+      ctx.globalAlpha = 0.26; // Делаем лучи прозрачнее на 65% (остается 35% видимости)
       let luchW = w * 2;
       let luchH = h * 2;
       let luchX = -(luchW - w) / 2;
