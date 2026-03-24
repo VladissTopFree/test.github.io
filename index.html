@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.0</title>
+<title>Новый функционал v0.6.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1232,6 +1232,7 @@ function finalizeAndDrawBackground() {
     // Например, для 1080p блюр будет около 8-9 пикселей
     let blurValue = Math.max(6, Math.floor(h * 0.008)); 
     ctx.filter = `blur(${blurValue}px)`;
+    ctx.globalCompositeOperation = "overlay";
     
     // Увеличили базовый размер звездочки в 2 раза
     let baseSize = h * 0.18; 
