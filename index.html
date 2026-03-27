@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.4</title>
+<title>Новый функционал v0.6.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -153,26 +153,6 @@
     border-color: #ff007f;
   }
 
-  .card-price-input {
-    background: #1a1a1a;
-    border: 2px solid #ff007f;
-    color: #3bf83b;
-    padding: 10px;
-    font-size: 20px;
-    font-family: 'Lilita One', sans-serif;
-    border-radius: 8px;
-    text-align: center;
-    width: 80%;
-    margin-bottom: 15px;
-    outline: none;
-    box-shadow: 0 4px 10px rgba(255,0,127,0.2);
-    transition: all 0.3s;
-  }
-  .card-price-input:focus {
-    box-shadow: 0 4px 20px rgba(255,0,127,0.5);
-    border-color: #fff;
-  }
-  
   canvas {
     max-width: 100%;
     max-height: 50vh;
@@ -284,7 +264,7 @@
   }
 
   .layer-price-input {
-    width: 60px;
+    width: 80px;
     background: #0a427f;
     border: 1px solid #1059a3;
     color: #fff;
@@ -293,7 +273,8 @@
     text-align: center;
     font-size: 14px;
     outline: none;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Lilita One', 'Segoe UI', sans-serif;
+    letter-spacing: 1px;
   }
   .layer-price-input:focus { border-color: #3bf83b; }
 
@@ -516,7 +497,7 @@ function renderLayerPanel() {
     let textRow = document.createElement('div');
     textRow.className = 'layer-row';
     textRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать большой текст">${eyeIcon}</div>
         <div class="layer-name">Текст (${window.layerState.textValue})</div>
         <div class="layer-download" onclick="downloadTextLayer()" title="Скачать текст">${downloadIcon}</div>
     `;
@@ -524,13 +505,16 @@ function renderLayerPanel() {
 
     // Слои акций
     window.layerState.offers.forEach((offer, idx) => {
+        let isFree = offer.price.trim().toUpperCase() === 'FREE';
+        let inputColorStyle = isFree ? 'color: #3bf83b;' : 'color: #fff;';
+        
         let row = document.createElement('div');
         row.className = 'layer-row';
         row.innerHTML = `
             <div class="layer-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})" title="Скрыть/показать">${eyeIcon}</div>
             <div class="layer-name">Акция ${idx + 1}</div>
             <input type="text" class="layer-price-input" id="layer-price-${idx}" value="${offer.price}" 
-                   oninput="updateOfferPriceFromLayer(${idx}, this.value)" title="Изменить цену">
+                   style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)" title="Изменить цену">
             <button class="layer-stroke-btn ${offer.hasStroke ? 'active' : ''}" onclick="toggleOfferStroke(${idx})">
                 Обводка ${offer.hasStroke ? '✔' : '❌'}
             </button>
@@ -567,11 +551,10 @@ window.updateOfferPriceFromLayer = (idx, val) => {
     let offer = window.layerState.offers[idx];
     offer.price = val;
     
-    // Синхронизация со старым инпутом на карточке
-    let oldInput = document.getElementById(`old-price-input-${idx}`);
-    if(oldInput) {
-        oldInput.value = val;
-        oldInput.style.color = (val.trim().toUpperCase() === 'FREE') ? '#3bf83b' : '#fff';
+    // Обновляем цвет инпута в слоях
+    let layerInput = document.getElementById(`layer-price-${idx}`);
+    if(layerInput) {
+        layerInput.style.color = (val.trim().toUpperCase() === 'FREE') ? '#3bf83b' : '#fff';
     }
     
     // Обновляем canvas карточки
@@ -587,8 +570,12 @@ window.downloadTextLayer = () => {
     tempC.height = rawBgImage ? rawBgImage.height : 1080;
     let ctx = tempC.getContext('2d');
     if (window.layerState.textValue) {
+        // Водяные знаки скачиваем всегда
         drawWatermarks(ctx, window.layerState.textValue, tempC.width, tempC.height);
-        drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
+        // Большой ник скачиваем, только если он видим
+        if (window.layerState.textVisible) {
+            drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
+        }
     }
     downloadCanvas(tempC, 'text_layer.png');
 };
@@ -1050,9 +1037,6 @@ function runMagicLogic(img) {
     
     let cW = maxX - minX + 1; let cH = maxY - minY + 1;
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'card-wrapper';
-
     const c = document.createElement('canvas');
     c.width = cW; c.height = cH;
     const cx = c.getContext('2d', { willReadFrequently: true });
@@ -1104,43 +1088,6 @@ function runMagicLogic(img) {
         price: "FREE",
         ref: offerObj
     });
-
-    const priceInput = document.createElement('input');
-    priceInput.type = 'text';
-    priceInput.className = 'card-price-input';
-    priceInput.id = `old-price-input-${offerIdx}`;
-    priceInput.value = 'FREE';
-    priceInput.maxLength = 12;
-    priceInput.oninput = (e) => {
-        let val = e.target.value;
-        
-        // Синхронизация с панелью слоев
-        let layerInput = document.getElementById(`layer-price-${offerIdx}`);
-        if(layerInput) layerInput.value = val;
-        window.layerState.offers[offerIdx].price = val;
-
-        if (val.trim().toUpperCase() === 'FREE') {
-            priceInput.style.color = '#3bf83b';
-            if(layerInput) layerInput.style.color = '#fff'; // инпут в панели белый для free по дизайну
-        } else {
-            priceInput.style.color = '#fff';
-            if(layerInput) layerInput.style.color = '#fff';
-        }
-        
-        cx.putImageData(drawInfo.blankedImgData, 0, 0);
-        drawPriceText(cx, cW, cH, val, drawInfo);
-        redrawFinalBackgrounds();
-    };
-
-    const btn = document.createElement('a');
-    btn.className = 'btn';
-    btn.innerText = `💾 Скачать акцию`;
-    btn.onclick = () => window.downloadOfferLayer(offerIdx);
-
-    wrapper.appendChild(c);
-    wrapper.appendChild(priceInput);
-    wrapper.appendChild(btn);
-    cardsContainer.appendChild(wrapper);
   });
 
   checkBatchCompletion();
@@ -1288,11 +1235,16 @@ function finalizeAndDrawBackground() {
       rowCards.forEach(offerState => {
         let item = offerState.ref;
         let ratio = item.canvas.width / item.canvas.height;
-        let drawW = finalH * ratio; 
-        let drawH = finalH;         
-        let drawY = currentY;       
+        
+        // Жесткое округление координат и размеров для максимального качества
+        let drawW = Math.round(finalH * ratio); 
+        let drawH = Math.round(finalH);         
+        let drawY = Math.round(currentY);       
 
         fCtx.save();
+        fCtx.imageSmoothingEnabled = true;
+        fCtx.imageSmoothingQuality = 'high';
+        
         fCtx.shadowColor = "rgba(0, 0, 0, 0.3)"; 
         fCtx.shadowBlur = 21;                    
         fCtx.shadowOffsetX = 0;                  
@@ -1316,20 +1268,23 @@ function finalizeAndDrawBackground() {
             combinedCanvas.width = drawW + outlineSize * 2;
             combinedCanvas.height = drawH + outlineSize * 2;
             const combCtx = combinedCanvas.getContext('2d');
+            
+            combCtx.imageSmoothingEnabled = true;
+            combCtx.imageSmoothingQuality = 'high';
 
             for (let i = 0; i < steps; i++) {
                 let angle = (i / steps) * Math.PI * 2;
-                let ox = Math.cos(angle) * outlineSize;
-                let oy = Math.sin(angle) * outlineSize;
+                let ox = Math.round(Math.cos(angle) * outlineSize);
+                let oy = Math.round(Math.sin(angle) * outlineSize);
                 combCtx.drawImage(silCanvas, outlineSize + ox, outlineSize + oy, drawW, drawH);
             }
 
             combCtx.drawImage(item.canvas, outlineSize, outlineSize, drawW, drawH);
             
-            fCtx.drawImage(combinedCanvas, currentX - outlineSize, drawY - outlineSize);
+            fCtx.drawImage(combinedCanvas, Math.round(currentX) - outlineSize, drawY - outlineSize);
         } else {
             // Без обводки, но с тенью
-            fCtx.drawImage(item.canvas, currentX, drawY, drawW, drawH);
+            fCtx.drawImage(item.canvas, Math.round(currentX), drawY, drawW, drawH);
         }
         
         fCtx.restore();
@@ -1392,9 +1347,14 @@ function drawFullBackground(ctx, w, h) {
     }
 
     // Текстовый слой
-    if (window.layerState.textVisible && window.layerState.textValue) {
+    if (window.layerState.textValue) {
+        // Всегда рисуем маленькие водяные знаки
         drawWatermarks(ctx, window.layerState.textValue, w, h);
-        drawBeautifulNick(ctx, window.layerState.textValue, w, h);
+        
+        // Большой ник посередине отключается через панель слоев
+        if (window.layerState.textVisible) {
+            drawBeautifulNick(ctx, window.layerState.textValue, w, h);
+        }
     }
 }
 
