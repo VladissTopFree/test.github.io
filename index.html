@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.5</title>
+<title>Новый функционал v0.6.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -110,31 +110,32 @@
 
   input[type="file"] { display: none; }
 
+  /* Обновленная сетка результатов */
   #result-box {
     display: none;
-    flex-direction: column;
-    align-items: center;
-    z-index: 20;
     width: 100%;
-    padding: 230px 20px 60px 20px;
+    padding: 120px 20px 60px 20px;
     box-sizing: border-box;
+    z-index: 20;
   }
 
-  .title-count {
-    margin-bottom: 30px;
-    font-size: 28px;
-    color: #fff;
-    text-shadow: 0 0 10px rgba(255,0,127,0.5);
+  #result-layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 1600px;
+    gap: 30px;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
   }
 
   #cards-container {
+    flex: 1;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 30px;
-    justify-content: center;
-    width: 100%;
-    max-width: 1600px;
-    padding-right: 420px; /* Space for the layer panel */
+    align-items: center;
   }
 
   .card-wrapper {
@@ -155,7 +156,7 @@
 
   canvas {
     max-width: 100%;
-    max-height: 50vh;
+    max-height: 70vh; /* Увеличено для лучшего вида */
     border-radius: 12px;
     background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 20px 20px;
     margin-bottom: 20px;
@@ -214,11 +215,12 @@
   }
   #wizard-preview-canvas { max-width: 90%; max-height: 50vh; border-radius: 12px; border: 2px solid #ff007f; box-shadow: 0 0 30px rgba(255,0,127,0.4); }
   
-  /* --- НОВАЯ ПАНЕЛЬ СЛОЕВ --- */
+  /* --- ВСТРОЕННАЯ ПАНЕЛЬ СЛОЕВ --- */
   #layer-panel {
-    position: fixed;
+    position: sticky;
     top: 100px;
-    right: 20px;
+    width: 380px;
+    flex-shrink: 0;
     background: #061d38;
     border-radius: 12px;
     padding: 15px;
@@ -227,13 +229,13 @@
     gap: 10px;
     z-index: 50;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    max-height: 80vh;
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
-  .layer-panel::-webkit-scrollbar { width: 6px; }
-  .layer-panel::-webkit-scrollbar-thumb { background: #0a427f; border-radius: 6px; }
+  #layer-panel::-webkit-scrollbar { width: 6px; }
+  #layer-panel::-webkit-scrollbar-thumb { background: #0a427f; border-radius: 6px; }
 
   .layer-row {
     display: flex;
@@ -258,13 +260,16 @@
 
   .layer-name {
     flex-grow: 1;
-    min-width: 140px;
+    min-width: 120px;
     font-size: 14px;
     color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .layer-price-input {
-    width: 80px;
+    width: 70px;
     background: #0a427f;
     border: 1px solid #1059a3;
     color: #fff;
@@ -290,6 +295,7 @@
     align-items: center;
     gap: 5px;
     transition: all 0.2s;
+    white-space: nowrap;
   }
   .layer-stroke-btn:hover { background: #1059a3; }
   .layer-stroke-btn.active { background: #0d47a1; border-color: #2196f3; }
@@ -309,10 +315,12 @@
   
   /* Адаптив панели для малых экранов */
   @media(max-width: 1200px) {
-    #cards-container { padding-right: 0; }
+    #result-layout { flex-direction: column; align-items: center; }
     #layer-panel {
-        top: auto; bottom: 20px; right: 20px; left: 20px; 
-        max-height: 30vh; max-width: none;
+        position: static;
+        width: 100%;
+        max-width: 600px;
+        max-height: none;
     }
   }
 </style>
@@ -360,12 +368,14 @@
 
 <input type="file" id="file" accept="image/*" multiple>
 
-<!-- НОВАЯ ПАНЕЛЬ СЛОЕВ -->
-<div id="layer-panel"></div>
-
+<!-- НОВЫЙ ЛЕЙАУТ РЕЗУЛЬТАТОВ -->
 <div id="result-box">
-  <div class="title-count">Найдено акций: <span id="card-count" style="color: #ff007f; font-weight: bold;">0</span></div>
-  <div id="cards-container"></div>
+  <div id="result-layout">
+    <!-- Итоговые холсты -->
+    <div id="cards-container"></div>
+    <!-- Встроенная панель слоев -->
+    <div id="layer-panel"></div>
+  </div>
 </div>
 
 <div class="reset" id="resetBtn">✕ Загрузить другие фото</div>
@@ -375,7 +385,6 @@ const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("file");
 const resultBox = document.getElementById("result-box");
 const cardsContainer = document.getElementById("cards-container");
-const cardCountSpan = document.getElementById("card-count");
 const resetBtn = document.getElementById("resetBtn");
 const layerPanel = document.getElementById("layer-panel");
 
@@ -468,19 +477,17 @@ resetBtn.onclick = () => {
   window.layerState.offers = [];
   stagedFiles = [];
   updateDropzoneUI();
-  cardCountSpan.innerText = '0';
 };
 
 function processImages(files) {
   dropzone.style.display = 'none';
-  resultBox.style.display = 'flex';
+  resultBox.style.display = 'block';
   resetBtn.style.display = 'block';
   cardsContainer.innerHTML = '';
   allGeneratedCards = [];
   window.layerState.offers = [];
   filesProcessed = 0;
   filesToProcess = files.length;
-  cardCountSpan.innerText = '0';
 
   for(let i = 0; i < files.length; i++) {
     const img = new Image();
@@ -513,7 +520,7 @@ function renderLayerPanel() {
         row.innerHTML = `
             <div class="layer-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})" title="Скрыть/показать">${eyeIcon}</div>
             <div class="layer-name">Акция ${idx + 1}</div>
-            <input type="text" class="layer-price-input" id="layer-price-${idx}" value="${offer.price}" 
+            <input type="text" class="layer-price-input" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
                    style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)" title="Изменить цену">
             <button class="layer-stroke-btn ${offer.hasStroke ? 'active' : ''}" onclick="toggleOfferStroke(${idx})">
                 Обводка ${offer.hasStroke ? '✔' : '❌'}
@@ -548,6 +555,13 @@ window.toggleOfferStroke = (idx) => {
 };
 
 window.updateOfferPriceFromLayer = (idx, val) => {
+    // Ограничение цены максимумом 99999
+    if (/^\d+$/.test(val) && parseInt(val) > 99999) {
+        val = "99999";
+        let layerInput = document.getElementById(`layer-price-${idx}`);
+        if(layerInput) layerInput.value = val;
+    }
+
     let offer = window.layerState.offers[idx];
     offer.price = val;
     
@@ -557,10 +571,11 @@ window.updateOfferPriceFromLayer = (idx, val) => {
         layerInput.style.color = (val.trim().toUpperCase() === 'FREE') ? '#3bf83b' : '#fff';
     }
     
-    // Обновляем canvas карточки
+    // Обновляем canvas акции (в фоне)
     let cx = offer.ref.canvas.getContext('2d');
     cx.putImageData(offer.ref.info.blankedImgData, 0, 0);
     drawPriceText(cx, offer.ref.canvas.width, offer.ref.canvas.height, val, offer.ref.info);
+    
     redrawFinalBackgrounds();
 };
 
@@ -1037,6 +1052,7 @@ function runMagicLogic(img) {
     
     let cW = maxX - minX + 1; let cH = maxY - minY + 1;
 
+    // Холст создается в памяти, но не добавляется на страницу как отдельная плажка!
     const c = document.createElement('canvas');
     c.width = cW; c.height = cH;
     const cx = c.getContext('2d', { willReadFrequently: true });
@@ -1095,7 +1111,6 @@ function runMagicLogic(img) {
 
 function checkBatchCompletion() {
   filesProcessed++;
-  cardCountSpan.innerText = allGeneratedCards.length;
 
   if (filesProcessed === filesToProcess) {
     renderLayerPanel();
@@ -1104,7 +1119,8 @@ function checkBatchCompletion() {
 }
 
 function redrawFinalBackgrounds() {
-  document.querySelectorAll('.final-result-wrapper').forEach(el => el.remove());
+  // Очищаем контейнер от предыдущих итоговых результатов
+  cardsContainer.innerHTML = ''; 
   finalizeAndDrawBackground();
 }
 
@@ -1114,7 +1130,8 @@ function finalizeAndDrawBackground() {
   let bgW = rawBgImage.width || rawBgImage.naturalWidth;
   let bgH = rawBgImage.height || rawBgImage.naturalHeight;
 
-  let boxTop = bgH * 0.22;   
+  // ДИНАМИЧЕСКИЙ РАЗМЕР: если текст отключен, акции поднимаются выше и увеличиваются!
+  let boxTop = window.layerState.textVisible ? (bgH * 0.22) : (bgH * 0.05);   
   let boxBottom = bgH * 0.96;               
   let boxLeft = bgW * 0.04;                 
   let boxRight = bgW * 0.96;                
@@ -1194,7 +1211,6 @@ function finalizeAndDrawBackground() {
     finalWrapper.className = 'card-wrapper final-result-wrapper';
     finalWrapper.style.width = '100%';
     finalWrapper.style.maxWidth = '1000px'; 
-    finalWrapper.style.marginBottom = '40px';
     finalWrapper.style.border = '2px solid #ff007f';
 
     const title = document.createElement('div');
