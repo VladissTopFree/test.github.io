@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.7</title>
+<title>Новый функционал v0.7.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -1196,27 +1196,53 @@ function setupPersistentCanvas() {
         canvasWrapper.className = 'canvas-display-wrapper';
         canvasWrapper.appendChild(persistentCanvas);
         
+        let btnWrap = document.createElement('div');
+        btnWrap.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;';
+
         let btn = document.createElement('a');
         btn.className = 'btn';
-        btn.innerText = "💾 Скачать итоговое изображение";
-        // ИСПРАВЛЕНИЕ: скачиваем напрямую с полноразмерного persistentCanvas
+        btn.style.cssText = 'background:#555;box-shadow:0 4px 15px rgba(0,0,0,0.4);font-size:14px;';
+        btn.innerText = "💾 Обычное";
         btn.onclick = (e) => {
             e.preventDefault();
             try {
-                // Принудительно рендерим финальный кадр перед скачиванием
                 drawScene();
                 const link = document.createElement('a');
-                link.download = "result_with_bg.png";
-                link.href = persistentCanvas.toDataURL("image/png");
+                link.download = 'result_with_bg.png';
+                link.href = persistentCanvas.toDataURL('image/png');
                 link.click();
-            } catch(err) {
-                alert("Браузер заблокировал скачивание. Попробуйте правой кнопкой → Сохранить изображение.");
-            }
+            } catch(err) { alert('Браузер заблокировал скачивание.'); }
         };
-        
+
+        let btnHQ = document.createElement('a');
+        btnHQ.className = 'btn';
+        btnHQ.innerText = "🔥 Скачать HD — без потери качества";
+        btnHQ.onclick = (e) => {
+            e.preventDefault();
+            btnHQ.innerText = '⏳ Рендеринг HD...';
+            btnHQ.style.pointerEvents = 'none';
+            setTimeout(() => {
+                try {
+                    const hqCanvas = renderHighQuality();
+                    const link = document.createElement('a');
+                    link.download = 'result_HD.png';
+                    link.href = hqCanvas.toDataURL('image/png');
+                    link.click();
+                } catch(err) {
+                    alert('Ошибка HD-рендера: ' + err.message);
+                } finally {
+                    btnHQ.innerText = "🔥 Скачать HD — без потери качества";
+                    btnHQ.style.pointerEvents = '';
+                }
+            }, 50);
+        };
+
+        btnWrap.appendChild(btn);
+        btnWrap.appendChild(btnHQ);
+
         container.appendChild(title);
         container.appendChild(canvasWrapper);
-        container.appendChild(btn);
+        container.appendChild(btnWrap);
         cardsContainer.appendChild(container);
     }
     
@@ -1560,6 +1586,177 @@ function drawBeautifulNick(ctx, text, w, h) {
     document.getElementById('dropzone').style.display = 'flex';
   };
 })();
+
+// --- HD-рендер: финальный PNG в оригинальном разрешении без потери качества ---
+function renderHighQuality() {
+    if (!rawBgImage) throw new Error('Нет фона');
+
+    let bgW = rawBgImage.width;
+    let bgH = rawBgImage.height;
+
+    // Минимальная ширина итогового PNG = 3840px (4K). 
+    // Для фона 1024 → scale=4 → итог 4096×2304
+    // Для фона 1920 → scale=2 → итог 3840×2160
+    let scale = Math.max(1, Math.ceil(3840 / bgW));
+    let hqW = bgW * scale;
+    let hqH = bgH * scale;
+    // Жёсткий потолок чтобы не убить браузер
+    if (hqW > 8192) { scale = Math.floor(8192 / bgW); hqW = bgW * scale; hqH = bgH * scale; }
+
+    let hqCanvas = document.createElement('canvas');
+    hqCanvas.width = hqW;
+    hqCanvas.height = hqH;
+    let ctx = hqCanvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // 1. Фон — масштабируем с высоким качеством
+    ctx.drawImage(rawBgImage, 0, 0, hqW, hqH);
+
+    // 2. Лучи
+    if (globalAssets.luchImg) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'overlay';
+        let lW = hqW * 2, lH = hqH * 2;
+        ctx.drawImage(globalAssets.luchImg, -(lW - hqW) / 2, -(lH - hqH) / 2, lW, lH);
+        ctx.restore();
+    } else {
+        drawFallbackRays(ctx, hqW, hqH);
+    }
+
+    // 3. Звёзды
+    if (globalAssets.starImg) drawStars(ctx, globalAssets.starImg, hqW, hqH);
+
+    // 4. Водяные знаки (перерисовываем в полном разрешении)
+    if (window.layerState.textValue) drawWatermarks(ctx, window.layerState.textValue, hqW, hqH);
+
+    // 5. Главный текст — рисуем заново в HD прямо на ctx, без промежуточного canvas
+    if (window.layerState.textVisible && window.layerState.textValue) {
+        drawBeautifulNick(ctx, window.layerState.textValue, hqW, hqH);
+    }
+
+    // 6. Акции — каждая рендерится заново в HD-размере из исходного canvas
+    window.layerState.offers.forEach(o => {
+        if (!o.visible || !o.target.w) return;
+
+        // Целевые координаты в HD-пространстве
+        let dstX = Math.round(o.target.x * scale);
+        let dstY = Math.round(o.target.y * scale);
+        let dstW = Math.round(o.target.w * scale);
+        let dstH = Math.round(o.target.h * scale);
+
+        // Исходник: оригинальный canvas с вырезанной акцией + текст цены уже нарисован на нём
+        // Но текст цены нарисован в маленьком размере — нужно перерисовать его в HD
+        // Шаг 1: берём "чистый" canvas без цены (blankedImgData) и масштабируем его в HD
+        let info = o.ref.info;
+        let srcCanvas = o.ref.canvas;
+        let srcW = srcCanvas.width;
+        let srcH = srcCanvas.height;
+
+        // Создаём HD-canvas для этой акции
+        let hdCard = document.createElement('canvas');
+        hdCard.width = dstW;
+        hdCard.height = dstH;
+        let hdCtx = hdCard.getContext('2d');
+        hdCtx.imageSmoothingEnabled = true;
+        hdCtx.imageSmoothingQuality = 'high';
+
+        // Ступенчатое уменьшение исходника до HD-размера
+        let tmp = srcCanvas;
+        let curW = srcW, curH = srcH;
+        // Если исходник МЕНЬШЕ HD — увеличиваем (акция из маленького скриншота)
+        // Если больше — уменьшаем ступенчато
+        if (curW <= dstW && curH <= dstH) {
+            // Прямое масштабирование вверх
+            hdCtx.drawImage(tmp, 0, 0, dstW, dstH);
+        } else {
+            while (curW > dstW * 1.5 || curH > dstH * 1.5) {
+                let nextW = Math.max(dstW, Math.round(curW / 2));
+                let nextH = Math.max(dstH, Math.round(curH / 2));
+                let step = document.createElement('canvas');
+                step.width = nextW; step.height = nextH;
+                let sc = step.getContext('2d');
+                sc.imageSmoothingEnabled = true;
+                sc.imageSmoothingQuality = 'high';
+                sc.drawImage(tmp, 0, 0, nextW, nextH);
+                tmp = step;
+                curW = nextW; curH = nextH;
+            }
+            hdCtx.drawImage(tmp, 0, 0, dstW, dstH);
+        }
+
+        // Шаг 2: поверх рисуем текст цены заново в HD (стираем старый маленький текст не нужно —
+        // blankedImgData уже записан в srcCanvas, текст нарисован поверх пикселей цены)
+        // Масштабируем координаты текста
+        let priceScaleX = dstW / srcW;
+        let priceScaleY = dstH / srcH;
+        let hdInfo = {
+            textX: info.textX * priceScaleX,
+            textY: info.textY * priceScaleY,
+            boxHeight: info.boxHeight * priceScaleY
+        };
+        // Стираем старый маленький текст: рисуем blankedImgData масштабированно
+        if (info.blankedImgData) {
+            let blankCanvas = document.createElement('canvas');
+            blankCanvas.width = srcW; blankCanvas.height = srcH;
+            blankCanvas.getContext('2d').putImageData(info.blankedImgData, 0, 0);
+            hdCtx.clearRect(0, 0, dstW, dstH);
+            hdCtx.imageSmoothingEnabled = true;
+            hdCtx.imageSmoothingQuality = 'high';
+            // Ступенчато уменьшаем blanked canvas
+            let btmp = blankCanvas;
+            let bcW = srcW, bcH = srcH;
+            if (bcW > dstW || bcH > dstH) {
+                while (bcW > dstW * 1.5 || bcH > dstH * 1.5) {
+                    let bW2 = Math.max(dstW, Math.round(bcW / 2));
+                    let bH2 = Math.max(dstH, Math.round(bcH / 2));
+                    let bs = document.createElement('canvas');
+                    bs.width = bW2; bs.height = bH2;
+                    let bsc = bs.getContext('2d');
+                    bsc.imageSmoothingEnabled = true;
+                    bsc.imageSmoothingQuality = 'high';
+                    bsc.drawImage(btmp, 0, 0, bW2, bH2);
+                    btmp = bs; bcW = bW2; bcH = bH2;
+                }
+            }
+            hdCtx.drawImage(btmp, 0, 0, dstW, dstH);
+            // Рисуем текст цены заново в HD-размере
+            drawPriceText(hdCtx, dstW, dstH, o.price, hdInfo);
+        }
+
+        // Шаг 3: обводка в HD
+        let sw = o.hasStroke ? window.layerState.globalStrokeWidth * scale : 0;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = Math.round(21 * scale);
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = Math.round(16 * scale);
+
+        if (sw > 0) {
+            let silCanvas = document.createElement('canvas');
+            silCanvas.width = dstW; silCanvas.height = dstH;
+            let silCtx = silCanvas.getContext('2d');
+            silCtx.drawImage(hdCard, 0, 0);
+            silCtx.globalCompositeOperation = 'source-in';
+            silCtx.fillStyle = '#ffffff';
+            silCtx.fillRect(0, 0, dstW, dstH);
+
+            const steps = 36;
+            for (let i = 0; i < steps; i++) {
+                let angle = (i / steps) * Math.PI * 2;
+                ctx.drawImage(silCanvas, dstX + Math.cos(angle) * sw, dstY + Math.sin(angle) * sw, dstW, dstH);
+            }
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(hdCard, dstX, dstY, dstW, dstH);
+        ctx.restore();
+    });
+
+    return hqCanvas;
+}
 </script>
 </body>
 </html>
