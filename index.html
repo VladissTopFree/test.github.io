@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.0</title>
+<title>Новый функционал v0.8.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -296,6 +296,14 @@
   }
   .layer-price-input:focus { border-color: #3bf83b; }
 
+  /* Стили для ползунка прозрачности */
+  .layer-opacity-slider {
+    width: 60px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #ff007f;
+  }
+
   .global-stroke-control {
     display: flex;
     align-items: center;
@@ -415,7 +423,6 @@ const bgName = document.getElementById("bgName");
 let rawBgImage = null; 
 let globalAssets = { luchImg: null, starImg: null };
 
-// Добавим функцию вычисления глобального масштаба для HD 
 function getHDScale() {
     if (!rawBgImage) return 1;
     let scale = Math.max(1, Math.ceil(3840 / rawBgImage.width));
@@ -423,11 +430,19 @@ function getHDScale() {
     return scale;
 }
 
+// Расширенное состояние слоев
 window.layerState = {
     textVisible: true,
     textValue: "ARTZA DONATE",
     globalStrokeWidth: 2, 
-    offers: [] 
+    offers: [],
+    bgVisible: true,
+    luchVisible: true,
+    luchOpacity: 1.0,
+    starsVisible: true,
+    starsOpacity: 1.0,
+    watermarksVisible: true,
+    watermarksOpacity: 0.8
 };
 
 let allGeneratedCards = [];
@@ -528,6 +543,7 @@ function processImages(files) {
 function renderLayerPanel() {
     layerPanel.innerHTML = '';
     
+    // Блок общей обводки
     let globalControl = document.createElement('div');
     globalControl.className = 'layer-row';
     globalControl.style.justifyContent = 'center';
@@ -546,15 +562,18 @@ function renderLayerPanel() {
     `;
     layerPanel.appendChild(globalControl);
 
+    // 1. Главный текст
     let textRow = document.createElement('div');
     textRow.className = 'layer-row';
     textRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать большой текст">${eyeIcon}</div>
-        <div class="layer-name">Текст (${window.layerState.textValue})</div>
-        <div class="layer-download" onclick="downloadTextLayer()" title="Скачать текст">${downloadIcon}</div>
+        <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-name">Большой текст (${window.layerState.textValue})</div>
+        <div style="width: 60px;"></div>
+        <div class="layer-download" onclick="downloadTextLayer()" title="Скачать">${downloadIcon}</div>
     `;
     layerPanel.appendChild(textRow);
 
+    // 2. Акции
     window.layerState.offers.forEach((offer, idx) => {
         let isFree = offer.price.trim().toUpperCase() === 'FREE';
         let inputColorStyle = isFree ? 'color: #3bf83b;' : 'color: #fff;';
@@ -576,21 +595,62 @@ function renderLayerPanel() {
         layerPanel.appendChild(row);
     });
 
+    // 3. Лучи
+    let luchRow = document.createElement('div');
+    luchRow.className = 'layer-row';
+    luchRow.innerHTML = `
+        <div class="layer-eye ${window.layerState.luchVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('luch')" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-name">Свечение (Luch)</div>
+        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.luchOpacity}" oninput="changeOpacity('luch', this.value)" title="Прозрачность">
+        <div class="layer-download" onclick="downloadCosmeticLayer('luch')" title="Скачать лучи">${downloadIcon}</div>
+    `;
+    layerPanel.appendChild(luchRow);
+
+    // 4. Маленькие тексты (Watermarks)
+    let wmRow = document.createElement('div');
+    wmRow.className = 'layer-row';
+    wmRow.innerHTML = `
+        <div class="layer-eye ${window.layerState.watermarksVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('watermarks')" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-name">Маленькие тексты</div>
+        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)" title="Прозрачность">
+        <div class="layer-download" onclick="downloadCosmeticLayer('watermarks')" title="Скачать">${downloadIcon}</div>
+    `;
+    layerPanel.appendChild(wmRow);
+
+    // 5. Звезды
+    let starsRow = document.createElement('div');
+    starsRow.className = 'layer-row';
+    starsRow.innerHTML = `
+        <div class="layer-eye ${window.layerState.starsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('stars')" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-name">Звезды</div>
+        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.starsOpacity}" oninput="changeOpacity('stars', this.value)" title="Прозрачность">
+        <div class="layer-download" onclick="downloadCosmeticLayer('stars')" title="Скачать">${downloadIcon}</div>
+    `;
+    layerPanel.appendChild(starsRow);
+
+    // 6. Фон
+    let bgRow = document.createElement('div');
+    bgRow.className = 'layer-row';
+    bgRow.innerHTML = `
+        <div class="layer-eye ${window.layerState.bgVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('bg')" title="Скрыть/показать">${eyeIcon}</div>
+        <div class="layer-name">Фон (Оригинал)</div>
+        <div style="width: 60px;"></div>
+        <div class="layer-download" onclick="downloadCosmeticLayer('bg')" title="Скачать фон">${downloadIcon}</div>
+    `;
+    layerPanel.appendChild(bgRow);
+
     layerPanel.style.display = 'flex';
 }
 
 window.changeGlobalStroke = (delta) => {
     window.layerState.globalStrokeWidth = Math.max(0, window.layerState.globalStrokeWidth + delta);
-    
     let valDiv = document.getElementById('global-stroke-val');
     if (valDiv) valDiv.innerText = window.layerState.globalStrokeWidth;
-
     window.layerState.offers.forEach(offer => {
         if (offer.hasStroke && offer.target.w) {
             generateOfferCache(offer, offer.target.w, offer.target.h);
         }
     });
-
     startAnimation();
 };
 
@@ -636,17 +696,55 @@ window.updateOfferPriceFromLayer = (idx, val) => {
     startAnimation();
 };
 
+// Новые функции для управления косметикой
+window.toggleCosmeticLayer = (layerName) => {
+    window.layerState[layerName + 'Visible'] = !window.layerState[layerName + 'Visible'];
+    renderLayerPanel();
+    startAnimation(); 
+};
+
+window.changeOpacity = (layerName, value) => {
+    window.layerState[layerName + 'Opacity'] = parseFloat(value);
+    startAnimation();
+};
+
+window.downloadCosmeticLayer = (layerName) => {
+    let scale = getHDScale();
+    let w = rawBgImage ? rawBgImage.width * scale : 3840;
+    let h = rawBgImage ? rawBgImage.height * scale : 2160;
+    let tempC = document.createElement('canvas');
+    tempC.width = w; tempC.height = h;
+    let ctx = tempC.getContext('2d');
+    
+    if (layerName === 'bg' && rawBgImage) {
+        ctx.drawImage(rawBgImage, 0, 0, w, h);
+    } else if (layerName === 'luch') {
+        if (globalAssets.luchImg) {
+            ctx.globalCompositeOperation = "source-over"; // source-over для скачивания на прозрачном фоне
+            ctx.globalAlpha = window.layerState.luchOpacity;
+            let luchW = w * 2; let luchH = h * 2;
+            ctx.drawImage(globalAssets.luchImg, -(luchW-w)/2, -(luchH-h)/2, luchW, luchH);
+        } else {
+            ctx.globalCompositeOperation = "source-over";
+            drawFallbackRays(ctx, w, h, window.layerState.luchOpacity);
+        }
+    } else if (layerName === 'watermarks' && window.layerState.textValue) {
+        drawWatermarks(ctx, window.layerState.textValue, w, h, window.layerState.watermarksOpacity, true);
+    } else if (layerName === 'stars' && globalAssets.starImg) {
+        drawStars(ctx, globalAssets.starImg, w, h, window.layerState.starsOpacity, true);
+    }
+    
+    downloadCanvas(tempC, `${layerName}_layer.png`);
+};
+
 window.downloadTextLayer = () => {
     let scale = getHDScale();
     let tempC = document.createElement('canvas');
     tempC.width = rawBgImage ? rawBgImage.width * scale : 3840;
     tempC.height = rawBgImage ? rawBgImage.height * scale : 2160;
     let ctx = tempC.getContext('2d');
-    if (window.layerState.textValue) {
-        drawWatermarks(ctx, window.layerState.textValue, tempC.width, tempC.height);
-        if (window.layerState.textVisible) {
-            drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
-        }
+    if (window.layerState.textValue && window.layerState.textVisible) {
+        drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
     }
     downloadCanvas(tempC, 'text_layer.png');
 };
@@ -686,7 +784,6 @@ function generateOfferCache(offer, targetW, targetH) {
     hdCtx.imageSmoothingEnabled = true;
     hdCtx.imageSmoothingQuality = 'high';
 
-    // Рендерим четкий HD-текст поверх масштабированной подложки акции
     if (item.info && item.info.blankedImgData) {
         let blankCanvas = document.createElement('canvas');
         blankCanvas.width = srcW; blankCanvas.height = srcH;
@@ -1231,7 +1328,6 @@ function setupPersistentCanvas() {
             btnHQ.style.pointerEvents = 'none';
             setTimeout(() => {
                 try {
-                    // Теперь мы просто берем готовый HD-холст!
                     const link = document.createElement('a');
                     link.download = 'result_HD.png';
                     link.href = persistentCanvas.toDataURL('image/png');
@@ -1391,24 +1487,37 @@ function drawScene() {
     let w = persistentCanvas.width; let h = persistentCanvas.height;
     persistentCtx.clearRect(0, 0, w, h);
     
-    if (rawBgImage) persistentCtx.drawImage(rawBgImage, 0, 0, w, h);
+    // Рисуем фон, если он включен
+    if (window.layerState.bgVisible && rawBgImage) {
+        persistentCtx.drawImage(rawBgImage, 0, 0, w, h);
+    }
     
-    if (globalAssets.luchImg) {
+    // Рисуем лучи, если они включены
+    if (window.layerState.luchVisible) {
         persistentCtx.save();
         persistentCtx.globalCompositeOperation = "overlay"; 
-        let luchW = w * 2; let luchH = h * 2;
-        persistentCtx.drawImage(globalAssets.luchImg, -(luchW-w)/2, -(luchH-h)/2, luchW, luchH);
+        
+        if (globalAssets.luchImg) {
+            persistentCtx.globalAlpha = window.layerState.luchOpacity;
+            let luchW = w * 2; let luchH = h * 2;
+            persistentCtx.drawImage(globalAssets.luchImg, -(luchW-w)/2, -(luchH-h)/2, luchW, luchH);
+        } else {
+            drawFallbackRays(persistentCtx, w, h, window.layerState.luchOpacity);
+        }
         persistentCtx.restore();
-    } else {
-        drawFallbackRays(persistentCtx, w, h);
     }
     
-    if (globalAssets.starImg) drawStars(persistentCtx, globalAssets.starImg, w, h);
-    
-    if (window.layerState.textValue) {
-        drawWatermarks(persistentCtx, window.layerState.textValue, w, h);
+    // Рисуем звезды, если они включены
+    if (window.layerState.starsVisible && globalAssets.starImg) {
+        drawStars(persistentCtx, globalAssets.starImg, w, h, window.layerState.starsOpacity);
     }
     
+    // Рисуем маленькие тексты, если они включены
+    if (window.layerState.watermarksVisible && window.layerState.textValue) {
+        drawWatermarks(persistentCtx, window.layerState.textValue, w, h, window.layerState.watermarksOpacity);
+    }
+    
+    // Главный текст
     if (cachedTextCanvas && animText.alpha > 0.01) {
         persistentCtx.save();
         persistentCtx.globalAlpha = animText.alpha;
@@ -1423,6 +1532,7 @@ function drawScene() {
         persistentCtx.restore();
     }
     
+    // Акции
     let hdScale = getHDScale();
     
     window.layerState.offers.forEach(o => {
@@ -1456,20 +1566,23 @@ function drawScene() {
     });
 }
 
-function drawFallbackRays(ctx, w, h) {
+function drawFallbackRays(ctx, w, h, opacity = 1.0) {
     let cx = Math.round(w / 2); let cy = Math.round(h / 2); let radius = Math.sqrt(w*w + h*h); 
     let numRays = 30; let angleStep = (Math.PI * 2) / numRays;
-    ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = "#ffffff";
+    ctx.save(); 
+    ctx.globalAlpha = opacity * 0.4; // Базовая прозрачность 0.4, умноженная на выбор пользователя
+    ctx.fillStyle = "#ffffff";
     for (let i = 0; i < numRays; i += 2) {
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, i * angleStep, (i + 1) * angleStep); ctx.closePath(); ctx.fill();
     }
     ctx.restore();
 }
 
-function drawWatermarks(ctx, text, w, h) {
+function drawWatermarks(ctx, text, w, h, opacity = 0.8, forExport = false) {
     ctx.save(); 
-    ctx.globalCompositeOperation = "overlay"; 
-    ctx.globalAlpha = 0.8; 
+    // Если экспортируем отдельный слой, используем normal composite чтобы он не пропал на прозрачном фоне
+    ctx.globalCompositeOperation = forExport ? "source-over" : "overlay"; 
+    ctx.globalAlpha = opacity; 
     ctx.fillStyle = "#ffffff";
     
     let baseFontSize = Math.floor(h * 0.022); if (baseFontSize < 10) baseFontSize = 10;
@@ -1489,9 +1602,14 @@ function drawWatermarks(ctx, text, w, h) {
     ctx.restore();
 }
 
-function drawStars(ctx, starImg, w, h) {
-    ctx.save(); let blurValue = Math.max(6, Math.floor(h * 0.008)); ctx.filter = `blur(${blurValue}px)`;
-    ctx.globalCompositeOperation = "overlay"; let baseSize = h * 0.18; 
+function drawStars(ctx, starImg, w, h, opacity = 1.0, forExport = false) {
+    ctx.save(); 
+    let blurValue = Math.max(6, Math.floor(h * 0.008)); 
+    ctx.filter = `blur(${blurValue}px)`;
+    // Если экспортируем отдельный слой, используем normal composite чтобы он не пропал на прозрачном фоне
+    ctx.globalCompositeOperation = forExport ? "source-over" : "overlay"; 
+    ctx.globalAlpha = opacity;
+    let baseSize = h * 0.18; 
     const stars = [
       { x: w * 0.08, y: h * 0.10, scale: 0.9, rot: 0.2 }, { x: w * 0.15, y: h * 0.35, scale: 1.2, rot: -0.15 },
       { x: w * 0.05, y: h * 0.65, scale: 0.8, rot: 0.5 }, { x: w * 0.19, y: h * 0.98, scale: 1.1, rot: -0.2 }, 
