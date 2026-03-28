@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.8</title>
+<title>Новый функционал v0.8.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -570,6 +570,7 @@ resetBtn.onclick = () => {
   resetBtn.style.display = 'none';
   layerPanel.style.display = 'none';
   dropzone.style.display = 'flex';
+  document.querySelector('.top-controls').style.display = 'flex'; // Показываем панель обратно при сбросе
   fileInput.value = '';
   cardsContainer.innerHTML = '';
   allGeneratedCards = [];
@@ -584,6 +585,7 @@ resetBtn.onclick = () => {
 
 function processImages(files) {
   dropzone.style.display = 'none';
+  document.querySelector('.top-controls').style.display = 'none'; // Скрываем смену фона при готовой работе
   resultBox.style.display = 'block';
   resetBtn.style.display = 'block';
   cardsContainer.innerHTML = '';
