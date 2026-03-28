@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.0</title>
+<title>Новый функционал v0.7.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -280,6 +280,12 @@
   }
   .layer-price-input:focus { border-color: #3bf83b; }
 
+  /* Глобальные контролы обводки */
+  .global-stroke-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
   .stroke-controls {
     display: flex;
     align-items: stretch;
@@ -298,10 +304,22 @@
     white-space: nowrap;
   }
   .stroke-btn:hover { background: #1059a3; }
-  .stroke-btn-minus { border-radius: 15px 0 0 15px; padding: 5px 10px; border-right: none; }
-  .stroke-btn-main { padding: 5px 12px; flex-grow: 1; }
+  .stroke-btn-minus { border-radius: 15px 0 0 15px; padding: 5px 12px; border-right: none; font-size: 16px; font-weight: bold;}
+  .stroke-btn-main { padding: 5px 12px; flex-grow: 1; border-radius: 15px; }
   .stroke-btn-main.active { background: #0d47a1; border-color: #2196f3; }
-  .stroke-btn-plus { border-radius: 0 15px 15px 0; padding: 5px 10px; border-left: none; }
+  .stroke-btn-plus { border-radius: 0 15px 15px 0; padding: 5px 12px; border-left: none; font-size: 16px; font-weight: bold;}
+  .stroke-val {
+    background: #0a427f;
+    padding: 5px 15px;
+    color: #fff;
+    font-family: 'Lilita One';
+    border-top: 1px solid #1059a3;
+    border-bottom: 1px solid #1059a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
 
   .layer-download {
     cursor: pointer;
@@ -358,12 +376,9 @@
 
 <input type="file" id="file" accept="image/*" multiple>
 
-<!-- НОВЫЙ ЛЕЙАУТ РЕЗУЛЬТАТОВ -->
 <div id="result-box">
   <div id="result-layout">
-    <!-- Итоговый холст -->
     <div id="cards-container"></div>
-    <!-- Встроенная панель слоев -->
     <div id="layer-panel"></div>
   </div>
 </div>
@@ -390,7 +405,8 @@ let globalAssets = { luchImg: null, starImg: null };
 window.layerState = {
     textVisible: true,
     textValue: "ARTZA DONATE",
-    offers: [] // { id, visible, price, hasStroke, strokeWidth, ref, anim, target, cache }
+    globalStrokeWidth: 4, // Глобальная толщина
+    offers: [] 
 };
 
 let allGeneratedCards = [];
@@ -398,10 +414,9 @@ let filesProcessed = 0;
 let filesToProcess = 0;
 let stagedFiles = [];
 
-// Холсты для постоянного рендеринга (Canvas Animation Loop)
+// Холсты для постоянного рендеринга
 let persistentCanvas = null;
 let persistentCtx = null;
-let cachedWatermarksCanvas = null;
 let cachedTextCanvas = null;
 let animReq = null;
 let animText = { scale: 1, alpha: 1, targetScale: 1, targetAlpha: 1 };
@@ -494,6 +509,26 @@ function processImages(files) {
 function renderLayerPanel() {
     layerPanel.innerHTML = '';
     
+    // Блок общей обводки
+    let globalControl = document.createElement('div');
+    globalControl.className = 'layer-row';
+    globalControl.style.justifyContent = 'center';
+    globalControl.style.background = 'transparent';
+    globalControl.style.paddingTop = '0';
+    globalControl.style.marginBottom = '5px';
+    globalControl.innerHTML = `
+        <div class="global-stroke-control">
+            <span style="font-size: 14px; font-weight: bold; color: #fff;">Глобальная обводка:</span>
+            <div class="stroke-controls">
+                <button class="stroke-btn stroke-btn-minus" onclick="changeGlobalStroke(-1)" title="Уменьшить обводку у всех">-</button>
+                <div class="stroke-val" id="global-stroke-val">${window.layerState.globalStrokeWidth}</div>
+                <button class="stroke-btn stroke-btn-plus" onclick="changeGlobalStroke(1)" title="Увеличить обводку у всех">+</button>
+            </div>
+        </div>
+    `;
+    layerPanel.appendChild(globalControl);
+
+    // Слой текста
     let textRow = document.createElement('div');
     textRow.className = 'layer-row';
     textRow.innerHTML = `
@@ -503,6 +538,7 @@ function renderLayerPanel() {
     `;
     layerPanel.appendChild(textRow);
 
+    // Акции
     window.layerState.offers.forEach((offer, idx) => {
         let isFree = offer.price.trim().toUpperCase() === 'FREE';
         let inputColorStyle = isFree ? 'color: #3bf83b;' : 'color: #fff;';
@@ -515,11 +551,9 @@ function renderLayerPanel() {
             <input type="text" class="layer-price-input" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
                    style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)" title="Изменить цену">
             
-            <div class="stroke-controls">
-                <button class="stroke-btn stroke-btn-minus" onclick="changeStroke(${idx}, -1)" title="Уменьшить обводку">-</button>
-                <button class="stroke-btn stroke-btn-main ${offer.hasStroke ? 'active' : ''}" onclick="toggleOfferStroke(${idx})">Обводка</button>
-                <button class="stroke-btn stroke-btn-plus" onclick="changeStroke(${idx}, 1)" title="Увеличить обводку">+</button>
-            </div>
+            <button class="stroke-btn stroke-btn-main ${offer.hasStroke ? 'active' : ''}" onclick="toggleOfferStroke(${idx})">
+                Обводка ${offer.hasStroke ? '✔' : '❌'}
+            </button>
 
             <div class="layer-download" onclick="downloadOfferLayer(${idx})" title="Скачать акцию">${downloadIcon}</div>
         `;
@@ -528,6 +562,21 @@ function renderLayerPanel() {
 
     layerPanel.style.display = 'flex';
 }
+
+window.changeGlobalStroke = (delta) => {
+    window.layerState.globalStrokeWidth = Math.max(0, window.layerState.globalStrokeWidth + delta);
+    
+    let valDiv = document.getElementById('global-stroke-val');
+    if (valDiv) valDiv.innerText = window.layerState.globalStrokeWidth;
+
+    window.layerState.offers.forEach(offer => {
+        if (offer.hasStroke && offer.target.w) {
+            generateOfferCache(offer, offer.target.w, offer.target.h);
+        }
+    });
+
+    startAnimation();
+};
 
 window.toggleTextLayer = () => {
     window.layerState.textVisible = !window.layerState.textVisible;
@@ -548,17 +597,6 @@ window.toggleOfferStroke = (idx) => {
     generateOfferCache(offer, offer.target.w, offer.target.h);
     renderLayerPanel();
     startAnimation(); 
-};
-
-window.changeStroke = (idx, delta) => {
-    let offer = window.layerState.offers[idx];
-    if (!offer.hasStroke && delta > 0) offer.hasStroke = true;
-    offer.strokeWidth = Math.max(0, offer.strokeWidth + delta);
-    if (offer.strokeWidth === 0) offer.hasStroke = false;
-    
-    generateOfferCache(offer, offer.target.w, offer.target.h);
-    renderLayerPanel();
-    startAnimation();
 };
 
 window.updateOfferPriceFromLayer = (idx, val) => {
@@ -588,7 +626,6 @@ window.downloadTextLayer = () => {
     tempC.height = rawBgImage ? rawBgImage.height : 1080;
     let ctx = tempC.getContext('2d');
     if (window.layerState.textValue) {
-        // Заполняем черным для проверки, хотя лучше прозрачный
         drawWatermarks(ctx, window.layerState.textValue, tempC.width, tempC.height);
         if (window.layerState.textVisible) {
             drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
@@ -599,7 +636,6 @@ window.downloadTextLayer = () => {
 
 window.downloadOfferLayer = (idx) => {
     let offer = window.layerState.offers[idx];
-    // Генерируем временный кэш оригинального (огромного) размера для скачивания в максимальном качестве
     let tempOffer = { ...offer, cache: null };
     generateOfferCache(tempOffer); 
     downloadCanvas(tempOffer.cache.canvas, `offer_${idx+1}.png`);
@@ -616,46 +652,23 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- Пред-рендеринг для максимальной скорости и ИДЕАЛЬНОГО КАЧЕСТВА (Многоступенчатый даунскейл) ---
+// --- Пред-рендеринг для ИДЕАЛЬНОЙ РЕЗКОСТИ (Прямое сжатие) ---
 function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
     let tW = targetW || item.canvas.width;
     let tH = targetH || item.canvas.height;
-    let scaleRatio = targetH ? (targetH / item.canvas.height) : 1;
     
-    // 1. Многоступенчатое уменьшение для подавления "пиксельных лесенок"
-    let baseImg = item.canvas;
-    if (scaleRatio < 0.5) {
-        let curW = baseImg.width; 
-        let curH = baseImg.height;
-        let tmp = document.createElement('canvas'); 
-        tmp.width = curW; tmp.height = curH;
-        let tCtx = tmp.getContext('2d'); 
-        tCtx.drawImage(baseImg, 0, 0);
-        
-        while (curW * 0.5 > tW) {
-            curW = Math.floor(curW * 0.5); 
-            curH = Math.floor(curH * 0.5);
-            let nextTmp = document.createElement('canvas'); 
-            nextTmp.width = curW; nextTmp.height = curH;
-            let nextCtx = nextTmp.getContext('2d');
-            nextCtx.imageSmoothingEnabled = true; 
-            nextCtx.imageSmoothingQuality = "high";
-            nextCtx.drawImage(tmp, 0, 0, curW, curH);
-            tmp = nextTmp;
-        }
-        baseImg = tmp;
-    }
-    
-    // 2. Финальный ресайз к точным нужным размерам
+    // Прямое сжатие в 1 шаг дает наилучшую резкость (без ступенчатого блюра)
     let scaledBase = document.createElement('canvas');
-    scaledBase.width = tW; scaledBase.height = tH;
+    scaledBase.width = tW; 
+    scaledBase.height = tH;
     let sCtx = scaledBase.getContext('2d');
-    sCtx.imageSmoothingEnabled = true; sCtx.imageSmoothingQuality = "high";
-    sCtx.drawImage(baseImg, 0, 0, tW, tH);
+    sCtx.imageSmoothingEnabled = true; 
+    sCtx.imageSmoothingQuality = "high";
+    sCtx.drawImage(item.canvas, 0, 0, tW, tH);
 
-    // 3. Добавление обводки (в абсолютных пикселях экрана)
-    let sw = offer.hasStroke ? (offer.strokeWidth || 4) : 0;
+    // Добавление обводки
+    let sw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
     let pad = sw + 2; 
     
     let c = document.createElement('canvas');
@@ -675,19 +688,20 @@ function generateOfferCache(offer, targetW, targetH) {
         silCtx.fillStyle = '#ffffff';
         silCtx.fillRect(0, 0, tW, tH);
         
-        const steps = 36; // 36 шагов для идеальной плавности обводки
+        // 36 шагов для идеальной гладкости обводки
+        const steps = 36; 
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
             let ox = Math.round(Math.cos(angle) * sw);
             let oy = Math.round(Math.sin(angle) * sw);
-            ctx.drawImage(silCanvas, pad + ox, pad + oy, tW, tH);
+            // Жесткое округление координат для подавления лесенок
+            ctx.drawImage(silCanvas, Math.round(pad + ox), Math.round(pad + oy), tW, tH);
         }
     }
     
     ctx.drawImage(scaledBase, pad, pad, tW, tH);
     offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH };
 }
-
 
 // --- Логика вырезки ---
 function autoReplacePrice(ctx, w, h) {
@@ -1103,7 +1117,6 @@ function runMagicLogic(img) {
         id: offerIdx,
         visible: true,
         hasStroke: true,
-        strokeWidth: 4,
         price: "FREE",
         ref: offerObj,
         anim: { x: null, y: null, w: null, h: null, scale: 0, alpha: 0 },
@@ -1161,11 +1174,6 @@ function setupPersistentCanvas() {
     
     persistentCanvas.width = rawBgImage.width;
     persistentCanvas.height = rawBgImage.height;
-    
-    // Кэш текста и водяных знаков (Водяные знаки без эффекта overlay тут, он применяется при финальной отрисовке)
-    cachedWatermarksCanvas = document.createElement('canvas');
-    cachedWatermarksCanvas.width = rawBgImage.width; cachedWatermarksCanvas.height = rawBgImage.height;
-    drawWatermarks(cachedWatermarksCanvas.getContext('2d'), window.layerState.textValue, rawBgImage.width, rawBgImage.height);
     
     cachedTextCanvas = document.createElement('canvas');
     cachedTextCanvas.width = rawBgImage.width; cachedTextCanvas.height = rawBgImage.height;
@@ -1243,7 +1251,6 @@ function calculateLayoutTarget() {
             o.anim.x = o.target.x; o.anim.y = o.target.y; o.anim.w = o.target.w; o.anim.h = o.target.h; o.anim.scale = 0; o.anim.alpha = 0;
         }
 
-        // ПЕРЕСОЗДАЕМ КЭШ ПОД ТОЧНЫЙ НОВЫЙ РАЗМЕР (гарантирует идеальное качество без "мыла")
         if (!o.cache || o.cache.tW !== o.target.w || o.cache.tH !== o.target.h) {
             generateOfferCache(o, o.target.w, o.target.h);
         }
@@ -1322,12 +1329,9 @@ function drawScene() {
     // Звезды
     if (globalAssets.starImg) drawStars(persistentCtx, globalAssets.starImg, w, h);
     
-    // ВОДЯНЫЕ ЗНАКИ с идеальным Overlay
-    if (cachedWatermarksCanvas) {
-        persistentCtx.save();
-        persistentCtx.globalCompositeOperation = "overlay";
-        persistentCtx.drawImage(cachedWatermarksCanvas, 0, 0);
-        persistentCtx.restore();
+    // Водяные знаки (Рендерятся в ПРЯМОМ ЭФИРЕ с настоящим Overlay)
+    if (window.layerState.textValue) {
+        drawWatermarks(persistentCtx, window.layerState.textValue, w, h);
     }
     
     // Главный текст (анимирован)
@@ -1364,7 +1368,6 @@ function drawScene() {
         persistentCtx.imageSmoothingEnabled = true;
         persistentCtx.imageSmoothingQuality = 'high';
         
-        // Так как кэш уже отрендерен под нужный размер с обводкой, просто рисуем его 1:1 в центре
         let drawOffsetX = Math.round(- (c.tW / 2 + c.pad));
         let drawOffsetY = Math.round(- (c.tH / 2 + c.pad));
         
@@ -1385,18 +1388,22 @@ function drawFallbackRays(ctx, w, h) {
     ctx.restore();
 }
 
+// ПРЯМОЙ РЕНДЕР: Идеальное перекрытие для водяных знаков
 function drawWatermarks(ctx, text, w, h) {
     ctx.save(); 
-    // Убрали отсюда overlay, чтобы нормально отрендерилось в кэш. Overlay применяется во время финальной вставки в drawScene!
-    ctx.globalAlpha = 0.86; 
+    ctx.globalCompositeOperation = "overlay"; // Режим наложения "Перекрытие"
+    ctx.globalAlpha = 0.8; 
     ctx.fillStyle = "#ffffff";
+    
     let baseFontSize = Math.floor(h * 0.022); if (baseFontSize < 10) baseFontSize = 10;
     ctx.textBaseline = "middle";
+    
     const watermarks = [
       { x: w * 0.04, y: h * 0.18, scale: 1.50, align: "left" }, { x: w * 0.02, y: h * 0.43, scale: 0.60, align: "left" }, 
       { x: w * 0.03, y: h * 0.88, scale: 1.10, align: "left" }, { x: w * 0.96, y: h * 0.22, scale: 0.80, align: "right" }, 
       { x: w * 0.98, y: h * 0.45, scale: 1.60, align: "right" }, { x: w * 0.97, y: h * 0.85, scale: 0.70, align: "right" }  
     ];
+    
     watermarks.forEach(wm => {
       ctx.save(); ctx.textAlign = wm.align; let currentFontSize = Math.floor(baseFontSize * wm.scale);
       ctx.font = `${currentFontSize}px 'Marvin', 'Lilita One', sans-serif`;
