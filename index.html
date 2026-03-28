@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.8</title>
+<title>Новый функционал v0.7.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -532,7 +532,7 @@ function renderLayerPanel() {
 window.toggleTextLayer = () => {
     window.layerState.textVisible = !window.layerState.textVisible;
     renderLayerPanel();
-    calculateLayoutTarget(); // Запускает анимацию
+    calculateLayoutTarget(); 
 };
 
 window.toggleOffer = (idx) => {
@@ -545,7 +545,7 @@ window.toggleOffer = (idx) => {
 window.toggleOfferStroke = (idx) => {
     let offer = window.layerState.offers[idx];
     offer.hasStroke = !offer.hasStroke;
-    generateOfferCache(offer);
+    generateOfferCache(offer, offer.target.w, offer.target.h);
     renderLayerPanel();
     startAnimation(); 
 };
@@ -556,7 +556,7 @@ window.changeStroke = (idx, delta) => {
     offer.strokeWidth = Math.max(0, offer.strokeWidth + delta);
     if (offer.strokeWidth === 0) offer.hasStroke = false;
     
-    generateOfferCache(offer);
+    generateOfferCache(offer, offer.target.w, offer.target.h);
     renderLayerPanel();
     startAnimation();
 };
@@ -578,7 +578,7 @@ window.updateOfferPriceFromLayer = (idx, val) => {
     cx.putImageData(offer.ref.info.blankedImgData, 0, 0);
     drawPriceText(cx, offer.ref.canvas.width, offer.ref.canvas.height, val, offer.ref.info);
     
-    generateOfferCache(offer);
+    generateOfferCache(offer, offer.target.w, offer.target.h);
     startAnimation();
 };
 
@@ -588,6 +588,7 @@ window.downloadTextLayer = () => {
     tempC.height = rawBgImage ? rawBgImage.height : 1080;
     let ctx = tempC.getContext('2d');
     if (window.layerState.textValue) {
+        // Заполняем черным для проверки, хотя лучше прозрачный
         drawWatermarks(ctx, window.layerState.textValue, tempC.width, tempC.height);
         if (window.layerState.textVisible) {
             drawBeautifulNick(ctx, window.layerState.textValue, tempC.width, tempC.height);
@@ -598,7 +599,10 @@ window.downloadTextLayer = () => {
 
 window.downloadOfferLayer = (idx) => {
     let offer = window.layerState.offers[idx];
-    downloadCanvas(offer.cache.canvas, `offer_${idx+1}.png`);
+    // Генерируем временный кэш оригинального (огромного) размера для скачивания в максимальном качестве
+    let tempOffer = { ...offer, cache: null };
+    generateOfferCache(tempOffer); 
+    downloadCanvas(tempOffer.cache.canvas, `offer_${idx+1}.png`);
 };
 
 function downloadCanvas(canvas, filename) {
@@ -612,18 +616,51 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- Пред-рендеринг для максимальной скорости и качества (Резкость) ---
-function generateOfferCache(offer) {
+// --- Пред-рендеринг для максимальной скорости и ИДЕАЛЬНОГО КАЧЕСТВА (Многоступенчатый даунскейл) ---
+function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
+    let tW = targetW || item.canvas.width;
+    let tH = targetH || item.canvas.height;
+    let scaleRatio = targetH ? (targetH / item.canvas.height) : 1;
+    
+    // 1. Многоступенчатое уменьшение для подавления "пиксельных лесенок"
+    let baseImg = item.canvas;
+    if (scaleRatio < 0.5) {
+        let curW = baseImg.width; 
+        let curH = baseImg.height;
+        let tmp = document.createElement('canvas'); 
+        tmp.width = curW; tmp.height = curH;
+        let tCtx = tmp.getContext('2d'); 
+        tCtx.drawImage(baseImg, 0, 0);
+        
+        while (curW * 0.5 > tW) {
+            curW = Math.floor(curW * 0.5); 
+            curH = Math.floor(curH * 0.5);
+            let nextTmp = document.createElement('canvas'); 
+            nextTmp.width = curW; nextTmp.height = curH;
+            let nextCtx = nextTmp.getContext('2d');
+            nextCtx.imageSmoothingEnabled = true; 
+            nextCtx.imageSmoothingQuality = "high";
+            nextCtx.drawImage(tmp, 0, 0, curW, curH);
+            tmp = nextTmp;
+        }
+        baseImg = tmp;
+    }
+    
+    // 2. Финальный ресайз к точным нужным размерам
+    let scaledBase = document.createElement('canvas');
+    scaledBase.width = tW; scaledBase.height = tH;
+    let sCtx = scaledBase.getContext('2d');
+    sCtx.imageSmoothingEnabled = true; sCtx.imageSmoothingQuality = "high";
+    sCtx.drawImage(baseImg, 0, 0, tW, tH);
+
+    // 3. Добавление обводки (в абсолютных пикселях экрана)
     let sw = offer.hasStroke ? (offer.strokeWidth || 4) : 0;
     let pad = sw + 2; 
     
-    let cw = item.canvas.width;
-    let ch = item.canvas.height;
-    
     let c = document.createElement('canvas');
-    c.width = cw + pad * 2;
-    c.height = ch + pad * 2;
+    c.width = tW + pad * 2;
+    c.height = tH + pad * 2;
     let ctx = c.getContext('2d');
     
     ctx.imageSmoothingEnabled = true;
@@ -631,26 +668,24 @@ function generateOfferCache(offer) {
     
     if (sw > 0) {
         const silCanvas = document.createElement('canvas');
-        silCanvas.width = cw; silCanvas.height = ch;
+        silCanvas.width = tW; silCanvas.height = tH;
         const silCtx = silCanvas.getContext('2d');
-        silCtx.drawImage(item.canvas, 0, 0);
+        silCtx.drawImage(scaledBase, 0, 0);
         silCtx.globalCompositeOperation = 'source-in';
         silCtx.fillStyle = '#ffffff';
-        silCtx.fillRect(0, 0, cw, ch);
+        silCtx.fillRect(0, 0, tW, tH);
         
-        // Рисуем обводку в 36 шагов для идеального качества без угловатостей
-        const steps = 36;
+        const steps = 36; // 36 шагов для идеальной плавности обводки
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
             let ox = Math.round(Math.cos(angle) * sw);
             let oy = Math.round(Math.sin(angle) * sw);
-            // Жесткое округление координат спасает от субпиксельного размытия
-            ctx.drawImage(silCanvas, Math.round(pad + ox), Math.round(pad + oy), cw, ch);
+            ctx.drawImage(silCanvas, pad + ox, pad + oy, tW, tH);
         }
     }
     
-    ctx.drawImage(item.canvas, pad, pad, cw, ch);
-    offer.cache = { canvas: c, pad: pad };
+    ctx.drawImage(scaledBase, pad, pad, tW, tH);
+    offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH };
 }
 
 
@@ -1075,7 +1110,6 @@ function runMagicLogic(img) {
         target: { x: null, y: null, w: null, h: null, scale: 1, alpha: 1 },
         cache: null
     };
-    generateOfferCache(stateOffer);
     window.layerState.offers.push(stateOffer);
   });
 
@@ -1128,7 +1162,7 @@ function setupPersistentCanvas() {
     persistentCanvas.width = rawBgImage.width;
     persistentCanvas.height = rawBgImage.height;
     
-    // Кэш текста и водяных знаков
+    // Кэш текста и водяных знаков (Водяные знаки без эффекта overlay тут, он применяется при финальной отрисовке)
     cachedWatermarksCanvas = document.createElement('canvas');
     cachedWatermarksCanvas.width = rawBgImage.width; cachedWatermarksCanvas.height = rawBgImage.height;
     drawWatermarks(cachedWatermarksCanvas.getContext('2d'), window.layerState.textValue, rawBgImage.width, rawBgImage.height);
@@ -1138,7 +1172,7 @@ function setupPersistentCanvas() {
     drawBeautifulNick(cachedTextCanvas.getContext('2d'), window.layerState.textValue, rawBgImage.width, rawBgImage.height);
 }
 
-// --- Калькуляция целевой сетки для анимации (с округлением для резкости) ---
+// --- Калькуляция целевой сетки для анимации ---
 function calculateLayoutTarget() {
   if (!rawBgImage) return;
 
@@ -1196,7 +1230,6 @@ function calculateLayoutTarget() {
      
      rowCards.forEach(o => {
         let ratio = o.ref.canvas.width / o.ref.canvas.height;
-        // ЖЕСТКОЕ ОКРУГЛЕНИЕ математики для идеальной резкости
         o.target = { 
             x: Math.round(currentX), 
             y: Math.round(currentY), 
@@ -1206,10 +1239,15 @@ function calculateLayoutTarget() {
             alpha: 1 
         };
         
-        // Старт для свежих объектов из центра будущего положения
         if (o.anim.w === null) {
             o.anim.x = o.target.x; o.anim.y = o.target.y; o.anim.w = o.target.w; o.anim.h = o.target.h; o.anim.scale = 0; o.anim.alpha = 0;
         }
+
+        // ПЕРЕСОЗДАЕМ КЭШ ПОД ТОЧНЫЙ НОВЫЙ РАЗМЕР (гарантирует идеальное качество без "мыла")
+        if (!o.cache || o.cache.tW !== o.target.w || o.cache.tH !== o.target.h) {
+            generateOfferCache(o, o.target.w, o.target.h);
+        }
+
         currentX += (bestH * ratio) + gapX;
      });
      currentY += bestH + gapY;
@@ -1234,14 +1272,12 @@ function startAnimation() {
 function renderLoop() {
    let needsMore = false;
    
-   // Интерполяция Текста
    let dxTextScale = animText.targetScale - animText.scale;
    let MathAbs = Math.abs;
    
    if (MathAbs(dxTextScale) > 0.005) { animText.scale += dxTextScale * 0.15; needsMore = true; } else { animText.scale = animText.targetScale; }
    animText.alpha += (animText.targetAlpha - animText.alpha) * 0.15;
    
-   // Интерполяция Акций
    window.layerState.offers.forEach(o => {
        let a = o.anim; let t = o.target;
        
@@ -1286,8 +1322,13 @@ function drawScene() {
     // Звезды
     if (globalAssets.starImg) drawStars(persistentCtx, globalAssets.starImg, w, h);
     
-    // Водяные знаки (всегда статичны)
-    if (cachedWatermarksCanvas) persistentCtx.drawImage(cachedWatermarksCanvas, 0, 0);
+    // ВОДЯНЫЕ ЗНАКИ с идеальным Overlay
+    if (cachedWatermarksCanvas) {
+        persistentCtx.save();
+        persistentCtx.globalCompositeOperation = "overlay";
+        persistentCtx.drawImage(cachedWatermarksCanvas, 0, 0);
+        persistentCtx.restore();
+    }
     
     // Главный текст (анимирован)
     if (cachedTextCanvas && animText.alpha > 0.01) {
@@ -1309,31 +1350,29 @@ function drawScene() {
         persistentCtx.save();
         persistentCtx.globalAlpha = o.anim.alpha;
         
-        // Красивая тень
         persistentCtx.shadowColor = "rgba(0, 0, 0, 0.3)"; 
         persistentCtx.shadowBlur = 21;                    
         persistentCtx.shadowOffsetX = 0;                  
         persistentCtx.shadowOffsetY = 16;  
         
-        // ЖЕСТКОЕ округление координат для подавления субпиксельного мыла
         let cx = Math.round(o.anim.x + o.anim.w/2);
         let cy = Math.round(o.anim.y + o.anim.h/2);
         
         persistentCtx.translate(cx, cy);
         persistentCtx.scale(o.anim.scale, o.anim.scale);
         
-        let ratio = o.anim.w / o.ref.canvas.width;
-        let drawW = Math.round(c.canvas.width * ratio);
-        let drawH = Math.round(c.canvas.height * ratio);
-        
         persistentCtx.imageSmoothingEnabled = true;
         persistentCtx.imageSmoothingQuality = 'high';
-        persistentCtx.drawImage(c.canvas, Math.round(-drawW/2), Math.round(-drawH/2), drawW, drawH);
+        
+        // Так как кэш уже отрендерен под нужный размер с обводкой, просто рисуем его 1:1 в центре
+        let drawOffsetX = Math.round(- (c.tW / 2 + c.pad));
+        let drawOffsetY = Math.round(- (c.tH / 2 + c.pad));
+        
+        persistentCtx.drawImage(c.canvas, drawOffsetX, drawOffsetY);
         
         persistentCtx.restore();
     });
 }
-
 
 // --- Эффекты ---
 function drawFallbackRays(ctx, w, h) {
@@ -1347,7 +1386,10 @@ function drawFallbackRays(ctx, w, h) {
 }
 
 function drawWatermarks(ctx, text, w, h) {
-    ctx.save(); ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = 0.86; ctx.fillStyle = "#ffffff";
+    ctx.save(); 
+    // Убрали отсюда overlay, чтобы нормально отрендерилось в кэш. Overlay применяется во время финальной вставки в drawScene!
+    ctx.globalAlpha = 0.86; 
+    ctx.fillStyle = "#ffffff";
     let baseFontSize = Math.floor(h * 0.022); if (baseFontSize < 10) baseFontSize = 10;
     ctx.textBaseline = "middle";
     const watermarks = [
@@ -1421,6 +1463,7 @@ function drawBeautifulNick(ctx, text, w, h) {
   const wizardBgInput = document.getElementById('wizard-bg-input');
   const wizardUploadBtn = document.getElementById('wizard-upload-bg-btn');
   const wizardNextBtn2 = document.getElementById('wizard-next-btn2');
+  const wizardNickInput = document.getElementById('wizard-nick-input');
 
   document.querySelector('.top-controls').style.display = 'none';
   document.getElementById('dropzone').style.display = 'none';
@@ -1450,7 +1493,6 @@ function drawBeautifulNick(ctx, text, w, h) {
     globalAssets.starImg = await loadImage('Star.png');
     rawBgImage = uploadedBaseImg;
 
-    // СРАЗУ ЗАКРЫВАЕМ ВИЗАРД И ПЕРЕХОДИМ К ВЫРЕЗКЕ
     document.getElementById('bgName').innerText = "✅ Фон с ником загружен";
     document.getElementById('old-bg-control').style.display = 'none';
     wizardOverlay.style.display = 'none';
