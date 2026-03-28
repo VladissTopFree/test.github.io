@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v0.9.5</title>
+<title>Интерфейс v0.9.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.otf') format('opentype'); }
@@ -224,10 +224,20 @@
   .wizard-step h1 { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.4); margin-bottom: 20px; font-size: 32px; }
   .wizard-step p { color: #aaa; font-size: 18px; margin-top: -10px; margin-bottom: 10px; }
   #wizard-nick-input {
-    background: #1a1a1a; border: 2px solid #ff007f; color: #fff; padding: 15px 25px;
-    font-size: 30px; font-family: 'Marvin', 'Lilita One', sans-serif; border-radius: 12px;
-    text-align: center; width: 80%; outline: none; box-shadow: 0 5px 15px rgba(255,0,127,0.3);
+    background: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 22px 24px;
+    font-size: 18px;
+    color: #000;
+    width: 100%;
+    max-width: 360px;
+    outline: none;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: left;
   }
+  #wizard-nick-input::placeholder { color: #8E8E93; }
   
   #layer-panel {
     position: sticky;
@@ -593,22 +603,26 @@
   #wizard-overlay {
     background: #F2F2F7; /* Светлый фон как у дашборда */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-  
-  #wizard-step1 {
-    justify-content: flex-start;
-    padding-top: 4vh; /* Подняли контент повыше (было 10vh) */
+    justify-content: flex-start; /* Поднимаем контент повыше */
+    padding-top: 8vh;
   }
 
   .ios-progress { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
   .ios-progress .step { 
     width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
     font-weight: 500; font-size: 18px; border: 1.5px solid #8E8E93; color: #8E8E93; background: #F2F2F7; position: relative; z-index: 2; 
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Плавная пружинящая анимация */
   }
-  .ios-progress .step.active { background: #00A0FF; color: #fff; border-color: #00A0FF; }
+  .ios-progress .step.active { background: #00A0FF; color: #fff; border-color: #00A0FF; width: 32px; height: 32px; font-size: 18px; }
   .ios-progress .step.small { width: 24px; height: 24px; font-size: 14px; }
-  .ios-progress .line { width: 24px; height: 1.5px; background: #8E8E93; margin: 0 -2px; z-index: 1; }
+  .ios-progress .line { width: 24px; height: 1.5px; background: #8E8E93; margin: 0 -2px; z-index: 1; transition: background 0.4s ease; }
   .ios-progress .line.active { background: #00A0FF; }
+
+  .wizard-step { 
+    display: none; flex-direction: column; align-items: center; 
+    text-align: center; gap: 20px; width: 100%; max-width: 700px; padding: 0 20px;
+  }
+  .wizard-step.active { display: flex; animation: fadeIn 0.4s ease; }
 
   .ios-wizard-title { font-size: 38px; font-weight: 700; color: #000; margin-bottom: 12px; text-align: center; }
   .ios-wizard-subtitle { font-size: 17px; color: #8E8E93; text-align: center; line-height: 1.3; margin-bottom: 35px; font-weight: 400; max-width: 320px;}
@@ -785,16 +799,17 @@
 </div>
 
 <div id="wizard-overlay" style="display: none;">
-  <div id="wizard-step1" class="wizard-step active">
-    
-    <div class="ios-progress">
-      <div class="step active">1</div>
-      <div class="line active"></div>
-      <div class="step">2</div>
-      <div class="line"></div>
-      <div class="step small">3</div>
-    </div>
+  
+  <!-- ОБЩИЙ ПРОГРЕСС-БАР ДЛЯ АНИМАЦИИ -->
+  <div class="ios-progress" id="shared-progress">
+    <div class="step active" id="prog-step1">1</div>
+    <div class="line" id="prog-line1"></div>
+    <div class="step small" id="prog-step2">2</div>
+    <div class="line" id="prog-line2"></div>
+    <div class="step small" id="prog-step3">3</div>
+  </div>
 
+  <div id="wizard-step1" class="wizard-step active">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Фон. Выбери один из готовых цветов<br>или загрузи свой готовый фон</div>
     
@@ -819,10 +834,12 @@
   </div>
   
   <div id="wizard-step2" class="wizard-step">
-    <h1>Шаг 2: Введи свой ник</h1>
-    <p>Система сама добавит красивый 3D-текст и лучи на задний план.</p>
-    <input type="text" id="wizard-nick-input" placeholder="ARTZA DONATE" value="ARTZA DONATE" maxlength="16">
-    <div class="btn" id="wizard-next-btn2" style="font-size: 20px; padding: 15px 40px;">Перейти к вырезке</div>
+    <div class="ios-wizard-title">Создание акции</div>
+    <div class="ios-wizard-subtitle">Ник. Напиши свой ник, который<br>будет располагаться на твоей работе.</div>
+    
+    <input type="text" id="wizard-nick-input" placeholder="Введи свой ник..." maxlength="16">
+    
+    <button id="wizard-next-btn2" class="ios-btn-next">Далее</button>
   </div>
 </div>
 
@@ -2489,7 +2506,42 @@ function drawBeautifulNick(ctx, text, w, h) {
   wizardNextBtn1.onclick = () => {
     step1.classList.remove('active');
     step2.classList.add('active');
+
+    // Плавная анимация прогресс-бара
+    document.getElementById('prog-step1').classList.remove('active');
+    document.getElementById('prog-step1').classList.add('small');
+    document.getElementById('prog-line1').classList.add('active');
+    
+    document.getElementById('prog-step2').classList.remove('small');
+    document.getElementById('prog-step2').classList.add('active');
   };
+
+  // Обработчик для шага 2 (Показ кнопки "Далее")
+  function checkStep2Ready() {
+    if (wizardNickInput.value.trim().length > 0) {
+        wizardNextBtn2.classList.add('show');
+    } else {
+        wizardNextBtn2.classList.remove('show');
+    }
+  }
+
+  wizardNickInput.addEventListener('input', checkStep2Ready);
+
+  // Учет клавиатуры на мобильных устройствах
+  wizardNickInput.addEventListener('focus', () => {
+     wizardNextBtn2.style.position = 'relative';
+     wizardNextBtn2.style.bottom = 'auto';
+     wizardNextBtn2.style.marginTop = '30px';
+     setTimeout(() => {
+         wizardNextBtn2.scrollIntoView({ behavior: "smooth", block: "center" });
+     }, 300);
+  });
+  
+  wizardNickInput.addEventListener('blur', () => {
+     wizardNextBtn2.style.position = '';
+     wizardNextBtn2.style.bottom = '';
+     wizardNextBtn2.style.marginTop = '';
+  });
 
   const loadImage = (src) => new Promise((resolve) => {
     const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src;
