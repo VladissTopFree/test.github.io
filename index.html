@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v0.9.6</title>
+<title>Интерфейс v0.9.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.otf') format('opentype'); }
@@ -70,42 +70,6 @@
   }
   input[type=number] {
     -moz-appearance: textfield;
-  }
-
-  #dropzone {
-    position: absolute;
-    top: 220px;
-    left: 20px; right: 20px; bottom: 20px;
-    border: 3px dashed #444;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 10;
-    background: #111;
-  }
-  #dropzone:hover, #dropzone.dragover {
-    border-color: #ff007f;
-    background: rgba(255, 0, 127, 0.05);
-  }
-  #dropzone h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
-    pointer-events: none;
-    text-align: center;
-    color: #ff007f;
-    text-shadow: 0 0 15px rgba(255,0,127,0.4);
-  }
-  #dropzone p {
-    color: #aaa;
-    pointer-events: none;
-    font-size: 16px;
-    text-align: center;
-    max-width: 600px;
-    line-height: 1.5;
   }
 
   input[type="file"] { display: none; }
@@ -210,34 +174,6 @@
     transition: background 0.2s;
   }
   .reset:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-  #wizard-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #090909; z-index: 1000;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .wizard-step { 
-    display: none; flex-direction: column; align-items: center; 
-    text-align: center; gap: 20px; width: 100%; max-width: 700px; padding: 20px;
-  }
-  .wizard-step.active { display: flex; animation: fadeIn 0.5s ease; }
-  .wizard-step h1 { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.4); margin-bottom: 20px; font-size: 32px; }
-  .wizard-step p { color: #aaa; font-size: 18px; margin-top: -10px; margin-bottom: 10px; }
-  #wizard-nick-input {
-    background: #fff;
-    border: none;
-    border-radius: 24px;
-    padding: 22px 24px;
-    font-size: 18px;
-    color: #000;
-    width: 100%;
-    max-width: 360px;
-    outline: none;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
-  #wizard-nick-input::placeholder { color: #8E8E93; }
   
   #layer-panel {
     position: sticky;
@@ -363,15 +299,6 @@
   }
   .layer-download:hover { color: #ff007f; }
   .layer-download svg { width: 20px; height: 20px; }
-
-  .color-presets { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-  .color-btn {
-    width: 60px; height: 60px; border-radius: 50%; cursor: pointer;
-    border: 3px solid #333; transition: transform 0.2s, border-color 0.2s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  }
-  .color-btn:hover { transform: scale(1.1); border-color: #fff; }
-  .color-btn.top-btn { width: 35px; height: 35px; border-width: 2px; margin-bottom: 5px; }
 
   .layer-wrapper {
     display: flex;
@@ -573,7 +500,7 @@
     100% { background-position: 0% 50%; } /* Пауза в крайнем положении (3 секунды) */
   }
 
-  #ios-btn-create {
+  #ios-btn-create, .ios-btn-next {
     background: linear-gradient(110deg, #3390ec 38%, #8ad0ff 50%, #3390ec 62%);
     background-size: 300% 100%;
     color: #fff;
@@ -583,17 +510,20 @@
     font-size: 20px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: auto; /* Прижимает кнопку к низу экрана */
     transition: transform 0.1s;
     -webkit-tap-highlight-color: transparent;
-    animation: shimmerBg 4s infinite linear;
     box-shadow: 
       inset 0px 1px 0px rgba(255, 255, 255, 0.65),   /* Чёткий светлый блик сверху */
       inset 0px -1px 0px rgba(0, 0, 0, 0.15),        /* Чёткая тёмная окантовка снизу */
       0px 24px 48px rgba(0, 0, 0, 0.15);             /* Очень размытая и мягкая тень внизу */
   }
 
-  #ios-btn-create:active {
+  #ios-btn-create {
+    margin-top: auto;
+    animation: shimmerBg 4s infinite linear;
+  }
+
+  #ios-btn-create:active, .ios-btn-next:active {
     transform: scale(0.97);
   }
 
@@ -601,13 +531,23 @@
      ДИЗАЙН ШАГОВ (WIZARD) В СТИЛЕ iOS
      ======================================================== */
   #wizard-overlay {
+    position: fixed; 
+    top: 0; left: 0; width: 100%; height: 100%;
     background: #F2F2F7; /* Светлый фон как у дашборда */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    justify-content: flex-start; /* Поднимаем контент повыше */
+    z-index: 1000;
+    
+    /* ПРИНУДИТЕЛЬНОЕ ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ */
+    display: flex; 
+    flex-direction: column !important; 
+    align-items: center; 
+    justify-content: flex-start; 
+    
     padding-top: 8vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
   }
 
-  .ios-progress { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .ios-progress { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; width: 100%; }
   .ios-progress .step { 
     width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
     font-weight: 500; font-size: 18px; border: 1.5px solid #8E8E93; color: #8E8E93; background: #F2F2F7; position: relative; z-index: 2; 
@@ -621,6 +561,7 @@
   .wizard-step { 
     display: none; flex-direction: column; align-items: center; 
     text-align: center; gap: 20px; width: 100%; max-width: 700px; padding: 0 20px;
+    box-sizing: border-box;
   }
   .wizard-step.active { display: flex; animation: fadeIn 0.4s ease; }
 
@@ -645,7 +586,7 @@
   
   .ios-color-btn {
     width: 52px; height: 52px; border-radius: 50%;
-    box-shadow: inset -2px -4px 8px rgba(0,0,0,0.2), inset 2px 2px 8px rgba(255,255,255,0.3), 0 8px 15px rgba(0,0,0,0.15); /* Мягкие объемные тени как на макете */
+    box-shadow: inset -2px -4px 8px rgba(0,0,0,0.2), inset 2px 2px 8px rgba(255,255,255,0.3); /* Тень убрана, оставлены только внутренние блики */
   }
 
   .ios-or-text { color: #8E8E93; font-size: 16px; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -654,38 +595,50 @@
   .ios-upload-link:active { opacity: 0.6; }
   .ios-upload-link svg { fill: none; stroke: currentColor; width: 9px; height: 15px; margin-top: 2px; stroke-width: 2.5px; stroke-linecap: round; stroke-linejoin: round;}
 
+  .ios-uploaded-count {
+    color: #8E8E93;
+    font-size: 15px;
+    margin-top: 8px;
+    display: none;
+  }
+
   .ios-btn-next {
-    background: #00A0FF;
-    color: #fff;
-    border: none;
-    border-radius: 40px;
-    padding: 16px;
-    font-size: 20px;
-    font-weight: 600;
-    cursor: pointer;
     width: calc(100% - 40px);
     max-width: 400px;
     position: absolute;
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    transition: opacity 0.2s, transform 0.2s;
     display: none; /* Скрыта по умолчанию */
-    -webkit-tap-highlight-color: transparent;
   }
   .ios-btn-next.show {
     display: block;
-    animation: slideUpFade 0.3s ease-out forwards;
+    animation: slideUpFade 0.3s ease-out forwards, shimmerBg 4s infinite linear;
   }
   @keyframes slideUpFade {
     from { opacity: 0; transform: translate(-50%, 20px); }
     to { opacity: 1; transform: translate(-50%, 0); }
   }
-  .ios-btn-next:active { opacity: 0.8; transform: translate(-50%, 0) scale(0.97); }
 
-  /* Временные стили для Шага 2, чтобы текст был читаем на светлом фоне */
-  #wizard-step2 h1 { color: #000; text-shadow: none; }
-  #wizard-step2 p { color: #8E8E93; }
+  #wizard-nick-input {
+    background: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 22px 24px;
+    font-size: 18px;
+    color: #000;
+    width: 100%;
+    max-width: 360px;
+    outline: none;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: left;
+  }
+  #wizard-nick-input::placeholder { color: #8E8E93; }
+
+  /* Стили для текстов внутри шагов */
+  #wizard-step1 h1, #wizard-step2 h1, #wizard-step3 h1 { color: #000; text-shadow: none; }
+  #wizard-step1 p, #wizard-step2 p, #wizard-step3 p { color: #8E8E93; }
 </style>
 </head>
 <body>
@@ -788,7 +741,6 @@
 </div>
 <!-- ======================================================== -->
 
-
 <div style="position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden;">
     <span style="font-family: 'Font16103'">preload</span>
     <span style="font-family: 'LilitaOneRus'">preload</span>
@@ -809,6 +761,7 @@
     <div class="step small" id="prog-step3">3</div>
   </div>
 
+  <!-- ШАГ 1 -->
   <div id="wizard-step1" class="wizard-step active">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Фон. Выбери один из готовых цветов<br>или загрузи свой готовый фон</div>
@@ -829,10 +782,11 @@
     </div>
     <input type="file" id="wizard-bg-input" accept="image/*" style="display:none;">
 
-    <!-- Кнопка Далее (появляется только после выбора) -->
+    <!-- Кнопка Далее -->
     <button id="wizard-next-btn1" class="ios-btn-next">Далее</button>
   </div>
   
+  <!-- ШАГ 2 -->
   <div id="wizard-step2" class="wizard-step">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Ник. Напиши свой ник, который<br>будет располагаться на твоей работе.</div>
@@ -841,25 +795,24 @@
     
     <button id="wizard-next-btn2" class="ios-btn-next">Далее</button>
   </div>
-</div>
 
-<div class="top-controls" style="display: none;">
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 15px;" id="old-bg-control">
-    <label style="margin:0;">Свой фон:</label>
-    <div class="btn" id="bgSelectBtn" style="font-size: 14px; padding: 10px 20px;">Загрузить картинку</div>
-    <span id="bgName" style="font-size: 12px; color: #ff007f;">Фон не выбран</span>
+  <!-- ШАГ 3 -->
+  <div id="wizard-step3" class="wizard-step">
+    <div class="ios-wizard-title">Создание акции</div>
+    <div class="ios-wizard-subtitle">Скриншот. Загрузи скриншоты из игры<br>что бы система смогла их вырезать<br>и вставить на твой фон.</div>
+    
+    <div class="ios-upload-link" id="wizard-upload-screens-btn" style="margin-top: 15px;">
+       <span>Загрузить скриншот</span>
+       <svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>
+    </div>
+    <div id="wizard-uploaded-count" class="ios-uploaded-count">Загружено: 0</div>
+    
+    <!-- Невидимый input для скриншотов, который мы теперь активируем из Шага 3 -->
+    <input type="file" id="file" accept="image/*" multiple style="display:none;">
+    
+    <button id="wizard-next-btn3" class="ios-btn-next">Далее</button>
   </div>
-  <input type="file" id="bgInput" accept="image/*" style="display:none;">
 </div>
-
-<div id="dropzone" style="display: none;">
-  <h1>🚀 Ultimate Auto-Cutter</h1>
-  <p>Кликните или перетащите <b>ОДИН ИЛИ НЕСКОЛЬКО</b> скриншотов.<br>Вы можете добавлять файлы по очереди перед началом вырезки.</p>
-  <div id="staged-count" style="display:none; margin-top: 15px; color: #ffba00; font-size: 20px; font-weight: bold;">Добавлено файлов: 0</div>
-  <div class="btn" id="startProcessBtn" style="display:none; margin-top:20px; background: #00cc66; box-shadow: 0 4px 15px rgba(0, 204, 102, 0.4);">Начать вырезку!</div>
-</div>
-
-<input type="file" id="file" accept="image/*" multiple>
 
 <div id="result-box">
   <div id="result-layout">
@@ -868,28 +821,21 @@
   </div>
 </div>
 
-<div class="reset" id="resetBtn">✕ Загрузить другие фото</div>
+<div class="reset" id="resetBtn">✕ Вернуться в меню</div>
 
 <script>
-const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("file");
 const resultBox = document.getElementById("result-box");
 const cardsContainer = document.getElementById("cards-container");
 const resetBtn = document.getElementById("resetBtn");
 const layerPanel = document.getElementById("layer-panel");
 
-const bgInput = document.getElementById("bgInput");
-const bgSelectBtn = document.getElementById("bgSelectBtn");
-const bgName = document.getElementById("bgName");
-
 let rawBgImage = null; 
 let globalAssets = { luchImg: null, starImg: null, pointsImg: null };
 
 /* ОБРАБОТЧИК ДЛЯ НОВОГО ДАШБОРДА И КНОПКИ "СОЗДАТЬ" */
 document.getElementById('ios-btn-create').addEventListener('click', function() {
-  // Скрываем красивый iOS дашборд
   document.getElementById('ios-dashboard').style.display = 'none';
-  // Показываем старый скрипт (wizard)
   document.getElementById('wizard-overlay').style.display = 'flex';
 });
 
@@ -966,16 +912,16 @@ const FONT_OPTIONS = [
 ];
 
 const TEXT_STYLES = [
-    { isClassic: true, grad: ['#ffba00', '#fcff00', '#ffba00'] }, // 0: Оригинальный стиль
-    { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', shadow: '#000000', outer: '#000000' }, // 1
-    { grad: ['#d90646', '#ff2a6b', '#d90646'], inner: '#ff2a6b', shadow: '#000000', outer: '#000000' }, // 2
-    { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', shadow: '#3e1900', outer: null }, // 3
-    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#3e3e3e', outer: '#232323' }, // 4
-    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#3e3e3e', outer: '#232323', outer2: '#ffffff' }, // 5
-    { grad: ['#ffba00', '#fcff00', '#ffba00'], inner: '#fcff00', shadow: '#5b2900', outer: '#3a1a00' }, // 6
-    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#000000', outer: '#000000' }, // 7
-    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#393939', outer: null }, // 8
-    { grad: ['#ffba00', '#fcff00', '#ffba00'], inner: '#fcff00', shadow: '#61005a', outer: '#42003d' } // 9
+    { isClassic: true, grad: ['#ffba00', '#fcff00', '#ffba00'] },
+    { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', shadow: '#000000', outer: '#000000' },
+    { grad: ['#d90646', '#ff2a6b', '#d90646'], inner: '#ff2a6b', shadow: '#000000', outer: '#000000' },
+    { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', shadow: '#3e1900', outer: null },
+    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#3e3e3e', outer: '#232323' },
+    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#3e3e3e', outer: '#232323', outer2: '#ffffff' },
+    { grad: ['#ffba00', '#fcff00', '#ffba00'], inner: '#fcff00', shadow: '#5b2900', outer: '#3a1a00' },
+    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#000000', outer: '#000000' },
+    { grad: ['#c7c7c7', '#ffffff', '#c7c7c7'], inner: '#ffffff', shadow: '#393939', outer: null },
+    { grad: ['#ffba00', '#fcff00', '#ffba00'], inner: '#fcff00', shadow: '#61005a', outer: '#42003d' }
 ];
 
 function createStylePreviewURL(style, font) {
@@ -1002,16 +948,13 @@ function createStylePreviewURL(style, font) {
         if (style.outer2) {
             txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer2; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
-            
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
-            
             txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else if (style.outer) {
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
-            
             txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else {
@@ -1055,36 +998,15 @@ let cachedTextCanvas = null;
 let animReq = null;
 let animText = { scale: 1, alpha: 1, targetScale: 1, targetAlpha: 1 };
 
-const startProcessBtn = document.getElementById("startProcessBtn");
-const stagedCountDiv = document.getElementById("staged-count");
-
-const eyeIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-const downloadIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
-
-bgSelectBtn.onclick = () => bgInput.click();
-bgInput.onchange = (e) => {
-  if (e.target.files[0]) {
-    const file = e.target.files[0];
-    bgName.innerText = file.name;
-    window.layerState.isGeneratedBg = false;
-    renderLayerPanel();
-    const img = new Image();
-    img.onload = () => { 
-        rawBgImage = img; 
-        if (allGeneratedCards.length > 0) calculateLayoutTarget(); 
-    };
-    img.src = URL.createObjectURL(file);
-  }
-};
-
 function updateDropzoneUI() {
   if (stagedFiles.length > 0) {
-    stagedCountDiv.style.display = 'block';
-    stagedCountDiv.innerText = `Добавлено скриншотов: ${stagedFiles.length}`;
-    startProcessBtn.style.display = 'block';
+    const countDiv = document.getElementById('wizard-uploaded-count');
+    countDiv.style.display = 'block';
+    countDiv.innerText = `Загружено: ${stagedFiles.length}`;
+    document.getElementById('wizard-next-btn3').classList.add('show');
   } else {
-    stagedCountDiv.style.display = 'none';
-    startProcessBtn.style.display = 'none';
+    document.getElementById('wizard-uploaded-count').style.display = 'none';
+    document.getElementById('wizard-next-btn3').classList.remove('show');
   }
 }
 
@@ -1093,41 +1015,14 @@ function handleFilesAdded(files) {
   updateDropzoneUI();
 }
 
-dropzone.onclick = (e) => { if(e.target === startProcessBtn) return; fileInput.click(); };
-dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add("dragover"); };
-dropzone.ondragleave = () => dropzone.classList.remove("dragover");
-dropzone.ondrop = (e) => {
-  e.preventDefault(); dropzone.classList.remove("dragover");
-  if (e.dataTransfer.files.length > 0) handleFilesAdded(e.dataTransfer.files);
-};
 fileInput.onchange = (e) => { if (e.target.files.length > 0) handleFilesAdded(e.target.files); };
 
-startProcessBtn.onclick = (e) => {
-  e.stopPropagation();
-  if (stagedFiles.length > 0) processImages(stagedFiles);
-};
-
 resetBtn.onclick = () => {
-  resultBox.style.display = 'none';
-  resetBtn.style.display = 'none';
-  layerPanel.style.display = 'none';
-  dropzone.style.display = 'flex';
-  document.querySelector('.top-controls').style.display = 'flex'; 
-  fileInput.value = '';
-  cardsContainer.innerHTML = '';
-  allGeneratedCards = [];
-  window.layerState.offers = [];
-  stagedFiles = [];
-  persistentCanvas = null;
-  persistentCtx = null;
-  if(animReq) cancelAnimationFrame(animReq);
-  animReq = null;
-  updateDropzoneUI();
+  // Полная перезагрузка для возвращения на главный экран iOS (самый чистый способ)
+  location.reload();
 };
 
 function processImages(files) {
-  dropzone.style.display = 'none';
-  document.querySelector('.top-controls').style.display = 'none'; 
   resultBox.style.display = 'block';
   resetBtn.style.display = 'block';
   cardsContainer.innerHTML = '';
@@ -2407,7 +2302,7 @@ function drawBeautifulNick(ctx, text, w, h) {
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txstrokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else if (style.outer) {
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
@@ -2456,15 +2351,15 @@ function drawBeautifulNick(ctx, text, w, h) {
   const wizardOverlay = document.getElementById('wizard-overlay');
   const step1 = document.getElementById('wizard-step1');
   const step2 = document.getElementById('wizard-step2');
+  const step3 = document.getElementById('wizard-step3');
   const wizardBgInput = document.getElementById('wizard-bg-input');
   const wizardUploadBtn = document.getElementById('wizard-upload-bg-btn');
   const wizardNextBtn1 = document.getElementById('wizard-next-btn1');
   const wizardNextBtn2 = document.getElementById('wizard-next-btn2');
+  const wizardNextBtn3 = document.getElementById('wizard-next-btn3');
+  const wizardUploadScreensBtn = document.getElementById('wizard-upload-screens-btn');
   const wizardNickInput = document.getElementById('wizard-nick-input');
   const wizardColorWraps = document.querySelectorAll('#wizard-color-presets .ios-color-btn-wrap');
-
-  // Изначально прячем старый интерфейс, пока включен новый Дашборд
-  // Настройки отображения уже заданы инлайновыми стилями
 
   let uploadedBaseImg = new Image();
   let selectedColor = null;
@@ -2482,8 +2377,8 @@ function drawBeautifulNick(ctx, text, w, h) {
          wizardColorWraps.forEach(w => w.classList.remove('selected'));
          wrap.classList.add('selected');
          selectedColor = wrap.getAttribute('data-color');
-         uploadedBaseImg.removeAttribute('src'); // сбрасываем картинку, если выбран цвет
-         document.getElementById('wizard-upload-text').innerText = "Загрузить фон"; // сбрасываем текст
+         uploadedBaseImg.removeAttribute('src');
+         document.getElementById('wizard-upload-text').innerText = "Загрузить фон";
          checkStep1Ready();
      };
   });
@@ -2502,12 +2397,11 @@ function drawBeautifulNick(ctx, text, w, h) {
     }
   };
 
-  // Обработчик кнопки Далее на 1 шаге
+  // Переход: Шаг 1 -> Шаг 2
   wizardNextBtn1.onclick = () => {
     step1.classList.remove('active');
     step2.classList.add('active');
 
-    // Плавная анимация прогресс-бара
     document.getElementById('prog-step1').classList.remove('active');
     document.getElementById('prog-step1').classList.add('small');
     document.getElementById('prog-line1').classList.add('active');
@@ -2516,7 +2410,6 @@ function drawBeautifulNick(ctx, text, w, h) {
     document.getElementById('prog-step2').classList.add('active');
   };
 
-  // Обработчик для шага 2 (Показ кнопки "Далее")
   function checkStep2Ready() {
     if (wizardNickInput.value.trim().length > 0) {
         wizardNextBtn2.classList.add('show');
@@ -2527,7 +2420,6 @@ function drawBeautifulNick(ctx, text, w, h) {
 
   wizardNickInput.addEventListener('input', checkStep2Ready);
 
-  // Учет клавиатуры на мобильных устройствах
   wizardNickInput.addEventListener('focus', () => {
      wizardNextBtn2.style.position = 'relative';
      wizardNextBtn2.style.bottom = 'auto';
@@ -2543,12 +2435,27 @@ function drawBeautifulNick(ctx, text, w, h) {
      wizardNextBtn2.style.marginTop = '';
   });
 
+  // Переход: Шаг 2 -> Шаг 3
+  wizardNextBtn2.onclick = () => {
+    step2.classList.remove('active');
+    step3.classList.add('active');
+
+    document.getElementById('prog-step2').classList.remove('active');
+    document.getElementById('prog-step2').classList.add('small');
+    document.getElementById('prog-line2').classList.add('active');
+    
+    document.getElementById('prog-step3').classList.remove('small');
+    document.getElementById('prog-step3').classList.add('active');
+  };
+
+  wizardUploadScreensBtn.onclick = () => fileInput.click();
+
   const loadImage = (src) => new Promise((resolve) => {
     const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src;
   });
 
-  // Обработчик финальной кнопки перехода к вырезке (Шаг 2)
-  wizardNextBtn2.onclick = async () => {
+  // Финальная кнопка: Запуск вырезки
+  wizardNextBtn3.onclick = async () => {
     let nick = wizardNickInput.value.trim().substring(0, 16) || "ARTZA DONATE";
     window.layerState.textValue = nick;
     globalAssets.luchImg = await loadImage('Luch.png');
@@ -2558,17 +2465,13 @@ function drawBeautifulNick(ctx, text, w, h) {
     if (selectedColor) {
        window.layerState.isGeneratedBg = true;
        rawBgImage = await createGradientBg(selectedColor);
-       document.getElementById('bgName').innerText = "Цветной фон применен";
     } else {
        window.layerState.isGeneratedBg = false;
        rawBgImage = uploadedBaseImg;
-       document.getElementById('bgName').innerText = "Картинка фона загружена";
     }
 
-    document.getElementById('old-bg-control').style.display = 'flex';
     wizardOverlay.style.display = 'none';
-    document.querySelector('.top-controls').style.display = 'flex';
-    document.getElementById('dropzone').style.display = 'flex';
+    processImages(stagedFiles);
   };
 })();
 </script>
