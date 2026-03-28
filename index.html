@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.3</title>
+<title>Новый функционал v0.7.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -652,34 +652,51 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- УЛУЧШЕННЫЙ СУПЕРСЭМПЛИНГ И КЭШИРОВАНИЕ ДЛЯ МАКСИМАЛЬНОЙ РЕЗКОСТИ ---
+// --- Пред-рендеринг для максимальной резкости маленьких акций БЕЗ МЫЛА ---
 function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
-    let tW = targetW || item.canvas.width;
-    let tH = targetH || item.canvas.height;
+    // Округляем до целых пикселей, чтобы избежать субпиксельного размытия
+    let tW = Math.round(targetW || item.canvas.width);
+    let tH = Math.round(targetH || item.canvas.height);
     
-    // Секрет резкости: используем максимальное разрешение (исходник акции или двукратный размер, если цель больше).
-    // Это полностью избавляет от замыливания картинки при добавлении эффектов и промежуточных масштабированиях.
-    let hrW = Math.max(item.canvas.width, Math.round(tW * 2));
-    let hrH = Math.max(item.canvas.height, Math.round(tH * 2));
-
-    // Пропорция между создаваемым кэшем и реальным размером отображения (нужна для масштабирования обводки)
-    let scaleMult = hrW / tW;
+    // Рисуем кэш ровно в том размере, в котором он будет на экране! (scaleMult удален)
+    let hrW = tW;
+    let hrH = tH;
 
     let scaledBase = document.createElement('canvas');
     scaledBase.width = hrW; 
     scaledBase.height = hrH;
     let sCtx = scaledBase.getContext('2d');
+    
+    // Включаем высококачественное сглаживание для ресайза
     sCtx.imageSmoothingEnabled = true; 
     sCtx.imageSmoothingQuality = "high";
     
-    // Рисуем исходник без потери качества
-    sCtx.drawImage(item.canvas, 0, 0, hrW, hrH);
+    let curW = item.canvas.width;
+    let curH = item.canvas.height;
+    let tmp = item.canvas;
+    
+    // ПЛАВНОЕ МНОГОСТУПЕНЧАТОЕ УМЕНЬШЕНИЕ (Step-down scaling) 
+    // Это сохраняет максимальную резкость и детали при сильном уменьшении оригинального скриншота!
+    while (curW > hrW * 2 && curH > hrH * 2) {
+        let t1 = document.createElement('canvas');
+        t1.width = Math.floor(curW / 2); 
+        t1.height = Math.floor(curH / 2);
+        let t1ctx = t1.getContext('2d');
+        t1ctx.imageSmoothingEnabled = true; 
+        t1ctx.imageSmoothingQuality = "high";
+        t1ctx.drawImage(tmp, 0, 0, t1.width, t1.height);
+        tmp = t1;
+        curW = t1.width;
+        curH = t1.height;
+    }
+    
+    // Финальная отрисовка нужного размера в кэш-базу
+    sCtx.drawImage(tmp, 0, 0, hrW, hrH);
 
-    // Расчет обводки
+    // Добавление обводки
     let baseSw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
-    let sw = Math.round(baseSw * scaleMult); // Увеличиваем толщину обводки пропорционально высокому разрешению
-    let pad = sw + 4; 
+    let pad = baseSw + 4; 
     
     let c = document.createElement('canvas');
     c.width = hrW + pad * 2;
@@ -689,7 +706,7 @@ function generateOfferCache(offer, targetW, targetH) {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     
-    if (sw > 0) {
+    if (baseSw > 0) {
         const silCanvas = document.createElement('canvas');
         silCanvas.width = hrW; silCanvas.height = hrH;
         const silCtx = silCanvas.getContext('2d');
@@ -698,18 +715,19 @@ function generateOfferCache(offer, targetW, targetH) {
         silCtx.fillStyle = '#ffffff';
         silCtx.fillRect(0, 0, hrW, hrH);
         
+        // 36 шагов для идеальной гладкости обводки
         const steps = 36; 
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
-            let ox = Math.round(Math.cos(angle) * sw);
-            let oy = Math.round(Math.sin(angle) * sw);
+            let ox = Math.round(Math.cos(angle) * baseSw);
+            let oy = Math.round(Math.sin(angle) * baseSw);
             ctx.drawImage(silCanvas, pad + ox, pad + oy, hrW, hrH);
         }
     }
     
     ctx.drawImage(scaledBase, pad, pad, hrW, hrH);
-    
-    offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH, scaleMult: scaleMult };
+    // Сохраняем готовую акцию ровно в целевом размере, чтобы в drawScene избежать второго масштабирования!
+    offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH };
 }
 
 // --- Логика вырезки ---
@@ -1327,8 +1345,6 @@ function drawScene() {
         persistentCtx.save();
         persistentCtx.globalCompositeOperation = "overlay"; 
         let luchW = w * 2; let luchH = h * 2;
-        persistentCtx.imageSmoothingEnabled = true;
-        persistentCtx.imageSmoothingQuality = 'high';
         persistentCtx.drawImage(globalAssets.luchImg, -(luchW-w)/2, -(luchH-h)/2, luchW, luchH);
         persistentCtx.restore();
     } else {
@@ -1343,7 +1359,7 @@ function drawScene() {
         drawWatermarks(persistentCtx, window.layerState.textValue, w, h);
     }
     
-    // Главный текст (анимирован, позиционирование без дробных чисел)
+    // Главный текст (анимирован, исправлено позиционирование без дробных чисел)
     if (cachedTextCanvas && animText.alpha > 0.01) {
         persistentCtx.save();
         persistentCtx.globalAlpha = animText.alpha;
@@ -1381,12 +1397,12 @@ function drawScene() {
         persistentCtx.imageSmoothingEnabled = true;
         persistentCtx.imageSmoothingQuality = 'high';
         
-        // Масштабируем пиксель-в-пиксель на основе пропорции высокочеткого кэша
-        let drawW = Math.round(c.canvas.width / c.scaleMult);
-        let drawH = Math.round(c.canvas.height / c.scaleMult);
+        // Размеры на экране теперь точно совпадают с кэшем (масштаб 1:1, исключает мыло!)
+        let drawW = c.canvas.width;
+        let drawH = c.canvas.height;
         
-        let drawOffsetX = Math.round(-drawW / 2);
-        let drawOffsetY = Math.round(-drawH / 2);
+        let drawOffsetX = -Math.round(drawW / 2);
+        let drawOffsetY = -Math.round(drawH / 2);
         
         persistentCtx.drawImage(c.canvas, drawOffsetX, drawOffsetY, drawW, drawH);
         
@@ -1475,7 +1491,7 @@ function drawBeautifulNick(ctx, text, w, h) {
     txCtx.drawImage(tempCanvas, 0, 0);
 
     ctx.save();
-    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; ctx.shadowBlur = 21; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 16;                
+    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; ctx.shadowBlur = 21; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 16;                 
     ctx.drawImage(textCanvas, 0, 0);
     ctx.restore();
 }
