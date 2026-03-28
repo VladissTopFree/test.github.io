@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.3</title>
+<title>Новый функционал v0.8.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -448,7 +448,7 @@ const bgSelectBtn = document.getElementById("bgSelectBtn");
 const bgName = document.getElementById("bgName");
 
 let rawBgImage = null; 
-let globalAssets = { luchImg: null, starImg: null };
+let globalAssets = { luchImg: null, starImg: null, pointsImg: null };
 
 // Функция генерации цветного фона
 function createGradientBg(colorType) {
@@ -504,7 +504,9 @@ window.layerState = {
     starsVisible: true,
     starsOpacity: 1.0,
     watermarksVisible: true,
-    watermarksOpacity: 0.8
+    watermarksOpacity: 0.8,
+    pointsVisible: true,
+    isGeneratedBg: false
 };
 
 let allGeneratedCards = [];
@@ -529,6 +531,8 @@ bgInput.onchange = (e) => {
   if (e.target.files[0]) {
     const file = e.target.files[0];
     bgName.innerText = file.name;
+    window.layerState.isGeneratedBg = false;
+    renderLayerPanel();
     const img = new Image();
     img.onload = () => { 
         rawBgImage = img; 
@@ -543,8 +547,10 @@ const topColorBtns = document.querySelectorAll('#top-color-presets .color-btn');
 topColorBtns.forEach(btn => {
     btn.onclick = async () => {
         let color = btn.getAttribute('data-color');
+        window.layerState.isGeneratedBg = true;
         rawBgImage = await createGradientBg(color);
         bgName.innerText = `Цвет: ${color}`;
+        renderLayerPanel();
         if (allGeneratedCards.length > 0) calculateLayoutTarget();
     };
 });
@@ -704,6 +710,19 @@ function renderLayerPanel() {
     `;
     layerPanel.appendChild(starsRow);
 
+    // 5.5 Паттерн точек (только для сгенерированных фонов)
+    if (window.layerState.isGeneratedBg) {
+        let pointsRow = document.createElement('div');
+        pointsRow.className = 'layer-row';
+        pointsRow.innerHTML = `
+            <div class="layer-eye ${window.layerState.pointsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('points')" title="Скрыть/показать">${eyeIcon}</div>
+            <div class="layer-name">Узор (Points)</div>
+            <div style="width: 60px;"></div>
+            <div class="layer-download" onclick="downloadCosmeticLayer('points')" title="Скачать узор">${downloadIcon}</div>
+        `;
+        layerPanel.appendChild(pointsRow);
+    }
+
     // 6. Фон
     let bgRow = document.createElement('div');
     bgRow.className = 'layer-row';
@@ -801,6 +820,11 @@ window.downloadCosmeticLayer = (layerName) => {
     
     if (layerName === 'bg' && rawBgImage) {
         ctx.drawImage(rawBgImage, 0, 0, w, h);
+    } else if (layerName === 'points') {
+        if (globalAssets.pointsImg) {
+            ctx.globalCompositeOperation = "source-over";
+            ctx.drawImage(globalAssets.pointsImg, 0, 0, w, h);
+        }
     } else if (layerName === 'luch') {
         if (globalAssets.luchImg) {
             ctx.globalCompositeOperation = "source-over"; // source-over для скачивания на прозрачном фоне
@@ -1581,6 +1605,14 @@ function drawScene() {
     if (window.layerState.bgVisible && rawBgImage) {
         persistentCtx.drawImage(rawBgImage, 0, 0, w, h);
     }
+
+    // Рисуем узор из точек, если фон сгенерирован
+    if (window.layerState.isGeneratedBg && window.layerState.pointsVisible && globalAssets.pointsImg) {
+        persistentCtx.save();
+        persistentCtx.globalCompositeOperation = "source-over";
+        persistentCtx.drawImage(globalAssets.pointsImg, 0, 0, w, h);
+        persistentCtx.restore();
+    }
     
     // Рисуем лучи, если они включены
     if (window.layerState.luchVisible) {
@@ -1800,11 +1832,14 @@ function drawBeautifulNick(ctx, text, w, h) {
     window.layerState.textValue = nick;
     globalAssets.luchImg = await loadImage('Luch.png');
     globalAssets.starImg = await loadImage('Star.png');
+    globalAssets.pointsImg = await loadImage('points.png');
     
     if (selectedColor) {
+       window.layerState.isGeneratedBg = true;
        rawBgImage = await createGradientBg(selectedColor);
        document.getElementById('bgName').innerText = "Цветной фон применен";
     } else {
+       window.layerState.isGeneratedBg = false;
        rawBgImage = uploadedBaseImg;
        document.getElementById('bgName').innerText = "Картинка фона загружена";
     }
