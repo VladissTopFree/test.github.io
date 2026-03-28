@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.1</title>
+<title>Новый функционал v0.8.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -434,6 +434,7 @@ function getHDScale() {
 window.layerState = {
     textVisible: true,
     textValue: "ARTZA DONATE",
+    textPosition: "top", // Позиция главного текста: top или bottom
     globalStrokeWidth: 2, 
     offers: [],
     bgVisible: true,
@@ -565,10 +566,13 @@ function renderLayerPanel() {
     // 1. Главный текст
     let textRow = document.createElement('div');
     textRow.className = 'layer-row';
+    let isTop = window.layerState.textPosition !== 'bottom';
     textRow.innerHTML = `
         <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать">${eyeIcon}</div>
         <div class="layer-name">Большой текст (${window.layerState.textValue})</div>
-        <div style="width: 60px;"></div>
+        <button class="stroke-btn" onclick="toggleTextPosition()" style="border-radius: 8px; padding: 5px 10px; margin-right: 10px;" title="Изменить позицию">
+            ${isTop ? '⬇ Вниз' : '⬆ Вверх'}
+        </button>
         <div class="layer-download" onclick="downloadTextLayer()" title="Скачать">${downloadIcon}</div>
     `;
     layerPanel.appendChild(textRow);
@@ -656,6 +660,13 @@ window.changeGlobalStroke = (delta) => {
 
 window.toggleTextLayer = () => {
     window.layerState.textVisible = !window.layerState.textVisible;
+    renderLayerPanel();
+    calculateLayoutTarget(); 
+};
+
+window.toggleTextPosition = () => {
+    window.layerState.textPosition = window.layerState.textPosition === 'bottom' ? 'top' : 'bottom';
+    window.updateCachedTextCanvas();
     renderLayerPanel();
     calculateLayoutTarget(); 
 };
@@ -1353,11 +1364,16 @@ function setupPersistentCanvas() {
     persistentCanvas.width = rawBgImage.width * scale;
     persistentCanvas.height = rawBgImage.height * scale;
     
+    window.updateCachedTextCanvas();
+}
+
+window.updateCachedTextCanvas = () => {
+    if (!persistentCanvas) return;
     cachedTextCanvas = document.createElement('canvas');
     cachedTextCanvas.width = persistentCanvas.width; 
     cachedTextCanvas.height = persistentCanvas.height;
     drawBeautifulNick(cachedTextCanvas.getContext('2d'), window.layerState.textValue, persistentCanvas.width, persistentCanvas.height);
-}
+};
 
 function calculateLayoutTarget() {
   if (!rawBgImage) return;
@@ -1369,8 +1385,10 @@ function calculateLayoutTarget() {
   animText.targetScale = window.layerState.textVisible ? 1 : 0.5;
   animText.targetAlpha = window.layerState.textVisible ? 1 : 0;
   
-  let boxTop = window.layerState.textVisible ? (bgH * 0.22) : (bgH * 0.05);   
-  let boxBottom = bgH * 0.96;               
+  let isTop = window.layerState.textPosition !== 'bottom';
+  let boxTop = (window.layerState.textVisible && isTop) ? (bgH * 0.22) : (bgH * 0.05);   
+  let boxBottom = (window.layerState.textVisible && !isTop) ? (bgH * 0.78) : (bgH * 0.96);               
+
   let boxLeft = bgW * 0.04;                 
   let boxRight = bgW * 0.96;                
 
@@ -1627,7 +1645,9 @@ function drawStars(ctx, starImg, w, h, opacity = 1.0, forExport = false) {
 function drawBeautifulNick(ctx, text, w, h) {
     let fontSize = Math.floor(h * 0.12); if (fontSize < 30) fontSize = 30;
     let x = Math.round(w / 2); 
-    let y = Math.round(h * 0.06 + (fontSize / 2)); 
+    let y = window.layerState.textPosition === 'bottom' 
+        ? Math.round(h * 0.92 - (fontSize / 2))
+        : Math.round(h * 0.06 + (fontSize / 2)); 
     let shadowDepth = Math.max(1, Math.floor(fontSize * 0.10));
 
     let textCanvas = document.createElement('canvas'); textCanvas.width = w; textCanvas.height = h; let txCtx = textCanvas.getContext('2d');
