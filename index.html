@@ -3,13 +3,13 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.6</title>
+<title>Новый функционал v0.8.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.ttf') format('truetype'), url('16103.otf') format('opentype'); }
   @font-face { font-family: 'LilitaOneRus'; src: url('lilitaonerus.ttf') format('truetype'); }
   @font-face { font-family: 'SupercellMagic'; src: url('Supercell-Magic.ttf') format('truetype'); }
-  @font-face { font-family: 'PusiaBold'; src: url('Pusia Bold.ttf') format('truetype'), url('Pusia Bold.otf') format('opentype'); }
+  @font-face { font-family: 'PusiaBold'; src: url('Pusia Bold.otf') format('opentype'); }
   @font-face { font-family: 'BebasNeue'; src: url('bebasneuecyrillic.ttf') format('truetype'); }
   @font-face { font-family: 'AmericanCaptain'; src: url('americancaptaincyrillic.ttf') format('truetype'); }
 
@@ -374,15 +374,23 @@
   }
   .layer-wrapper > .layer-row {
     background: transparent;
-    cursor: pointer;
   }
   .layer-wrapper:hover { background: #052c5c; }
   
+  .font-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 15px 10px 15px;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+  .font-toggle-row:hover { color: #fff; }
+  
   .layer-expanded-content {
     padding: 0 15px 15px 15px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: 2px;
-    padding-top: 10px;
   }
   
   .font-selector-grid {
@@ -708,18 +716,24 @@ function renderLayerPanel() {
         </button>
         <div class="layer-download" onclick="downloadTextLayer()" title="Скачать">${downloadIcon}</div>
     `;
-    textRow.onclick = (e) => {
-        if (!e.target.closest('.layer-eye') && !e.target.closest('.stroke-btn') && !e.target.closest('.layer-download')) {
-            window.layerState.textExpanded = !window.layerState.textExpanded;
-            renderLayerPanel();
-        }
-    };
     textWrapper.appendChild(textRow);
+
+    let chevronSvgText = window.layerState.textExpanded 
+        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        
+    let textFontToggle = document.createElement('div');
+    textFontToggle.className = 'font-toggle-row';
+    textFontToggle.innerHTML = `<span>Изменить шрифт:</span><span>${chevronSvgText}</span>`;
+    textFontToggle.onclick = () => {
+        window.layerState.textExpanded = !window.layerState.textExpanded;
+        renderLayerPanel();
+    };
+    textWrapper.appendChild(textFontToggle);
 
     if (window.layerState.textExpanded) {
         let expandContent = document.createElement('div');
         expandContent.className = 'layer-expanded-content';
-        expandContent.innerHTML = `<div style="font-size:12px; color:#aaa; margin-bottom:8px;">Изменить шрифт:</div>`;
         let fontGrid = document.createElement('div');
         fontGrid.className = 'font-selector-grid';
         FONT_OPTIONS.forEach(f => {
@@ -787,18 +801,24 @@ function renderLayerPanel() {
         <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)" title="Прозрачность">
         <div class="layer-download" onclick="downloadCosmeticLayer('watermarks')" title="Скачать">${downloadIcon}</div>
     `;
-    wmRow.onclick = (e) => {
-        if (!e.target.closest('.layer-eye') && !e.target.closest('.layer-opacity-slider') && !e.target.closest('.layer-download')) {
-            window.layerState.watermarksExpanded = !window.layerState.watermarksExpanded;
-            renderLayerPanel();
-        }
-    };
     wmWrapper.appendChild(wmRow);
+
+    let chevronSvgWm = window.layerState.watermarksExpanded 
+        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        
+    let wmFontToggle = document.createElement('div');
+    wmFontToggle.className = 'font-toggle-row';
+    wmFontToggle.innerHTML = `<span>Изменить шрифт:</span><span>${chevronSvgWm}</span>`;
+    wmFontToggle.onclick = () => {
+        window.layerState.watermarksExpanded = !window.layerState.watermarksExpanded;
+        renderLayerPanel();
+    };
+    wmWrapper.appendChild(wmFontToggle);
 
     if (window.layerState.watermarksExpanded) {
         let expandContent = document.createElement('div');
         expandContent.className = 'layer-expanded-content';
-        expandContent.innerHTML = `<div style="font-size:12px; color:#aaa; margin-bottom:8px;">Изменить шрифт:</div>`;
         let fontGrid = document.createElement('div');
         fontGrid.className = 'font-selector-grid';
         FONT_OPTIONS.forEach(f => {
