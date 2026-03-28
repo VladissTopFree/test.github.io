@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.8</title>
+<title>Новый функционал v0.8.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.ttf') format('truetype'), url('16103.otf') format('opentype'); }
@@ -583,6 +583,7 @@ const FONT_OPTIONS = [
 
 // Новые пресеты стилей для большого текста
 const TEXT_STYLES = [
+    { isClassic: true, grad: ['#ffba00', '#fcff00', '#ffba00'] }, // Оригинальный (изначальный) стиль
     { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', outer: '#000000', shadow: '#000000' },
     { grad: ['#d90646', '#ff2a6b', '#d90646'], inner: '#ff2a6b', outer: '#000000', shadow: '#000000' },
     { grad: ['#ff9600', '#ffde00', '#ff9600'], inner: '#ffde00', outer: null, shadow: '#3e1900' }
@@ -775,7 +776,7 @@ function renderLayerPanel() {
             sBtn.style.height = '35px';
             sBtn.style.borderRadius = '6px';
             sBtn.style.cursor = 'pointer';
-            sBtn.style.background = `linear-gradient(to bottom, ${st.grad[0]}, ${st.grad[1]} 52%, ${st.grad[2]})`;
+            sBtn.style.background = `linear-gradient(to bottom, ${st.grad[0]}, ${st.grad[1]} ${st.isClassic ? '48%' : '52%'}, ${st.grad[2]})`;
             sBtn.style.border = window.layerState.textStyleIndex === sIdx ? '2px solid #3bf83b' : '2px solid #1059a3';
             sBtn.style.boxShadow = window.layerState.textStyleIndex === sIdx ? '0 0 10px rgba(59,248,59,0.3)' : 'none';
             sBtn.onclick = (e) => {
@@ -1940,17 +1941,23 @@ function drawBeautifulNick(ctx, text, w, h) {
 
     txCtx.save(); txCtx.translate(x, y); txCtx.transform(1, 0, -0.10, 1, 0, 0); 
     
-    // Отрисовка внешней обводки и 3D тени
-    if (style.outer) {
-        txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.shadow; 
-        for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
-        
-        txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
-        txCtx.strokeText(text, 0, 0); 
+    if (style.isClassic) {
+        txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = "#ffffff"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
+        txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = "#42003d"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
+        txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = "#61005a"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
     } else {
-        // Если обводка выключена, используем только тень
-        txCtx.lineWidth = fontSize * 0.02; txCtx.strokeStyle = style.shadow; 
-        for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
+        // Отрисовка внешней обводки и 3D тени
+        if (style.outer) {
+            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.shadow; 
+            for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
+            
+            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
+            txCtx.strokeText(text, 0, 0); 
+        } else {
+            // Если обводка выключена, используем только тень
+            txCtx.lineWidth = fontSize * 0.02; txCtx.strokeStyle = style.shadow; 
+            for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
+        }
     }
     
     txCtx.restore();
@@ -1962,14 +1969,14 @@ function drawBeautifulNick(ctx, text, w, h) {
     // Отрисовка градиента
     let grad = tCtx.createLinearGradient(0, -fontSize * 0.4, 0, fontSize * 0.4);
     grad.addColorStop(0, style.grad[0]); 
-    grad.addColorStop(0.52, style.grad[1]); 
+    grad.addColorStop(style.isClassic ? 0.48 : 0.52, style.grad[1]); 
     grad.addColorStop(1, style.grad[2]);
     tCtx.fillStyle = grad; tCtx.fillText(text, 0, 0);
     
     // Внутренняя обводка
     tCtx.globalCompositeOperation = "source-atop"; 
     tCtx.lineWidth = fontSize * 0.06; 
-    tCtx.strokeStyle = style.inner; 
+    tCtx.strokeStyle = style.isClassic ? "#fcff00" : style.inner; 
     tCtx.lineJoin = "round"; 
     tCtx.strokeText(text, 0, 0);
     tCtx.restore();
