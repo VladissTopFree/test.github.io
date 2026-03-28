@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.6</title>
+<title>Новый функционал v0.7.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -671,75 +671,72 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- СУПЕРСЭМПЛИНГ: Пред-рендеринг для максимальной резкости маленьких акций ---
+// --- Кэш акций: рендерим в точный целевой размер через ступенчатое уменьшение ---
 function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
     let tW = targetW || item.canvas.width;
     let tH = targetH || item.canvas.height;
-    
-    // Рендерим кэш в 2 раза большего размера, чтобы сохранить пиксели при сжатии!
-    let scaleMult = 2;
-    let hrW = Math.round(tW * scaleMult);
-    let hrH = Math.round(tH * scaleMult);
 
-    let scaledBase = document.createElement('canvas');
-    scaledBase.width = hrW; 
-    scaledBase.height = hrH;
-    let sCtx = scaledBase.getContext('2d');
-    sCtx.imageSmoothingEnabled = true; 
-    sCtx.imageSmoothingQuality = "high";
-    
-    // Если картинка огромная, делаем один промежуточный шаг, чтобы избежать лесенок
-    let curW = item.canvas.width;
-    let curH = item.canvas.height;
+    // Ступенчатое уменьшение: каждый шаг не более чем в 2 раза.
+    // Это даёт максимальную резкость без артефактов.
     let tmp = item.canvas;
-    
-    if (curW > hrW * 2) {
-        let t1 = document.createElement('canvas');
-        t1.width = Math.round(curW / 2); t1.height = Math.round(curH / 2);
-        let t1ctx = t1.getContext('2d');
-        t1ctx.imageSmoothingEnabled = true; t1ctx.imageSmoothingQuality = "high";
-        t1ctx.drawImage(tmp, 0, 0, t1.width, t1.height);
-        tmp = t1;
-    }
-    
-    sCtx.drawImage(tmp, 0, 0, hrW, hrH);
+    let curW = tmp.width;
+    let curH = tmp.height;
 
-    // Добавление обводки
-    let baseSw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
-    let sw = baseSw * scaleMult; // Увеличиваем обводку пропорционально суперсэмплингу
-    let pad = sw + 4; 
-    
+    while (curW > tW * 1.5 || curH > tH * 1.5) {
+        let nextW = Math.max(tW, Math.round(curW / 2));
+        let nextH = Math.max(tH, Math.round(curH / 2));
+        let step = document.createElement('canvas');
+        step.width = nextW; step.height = nextH;
+        let sCtx = step.getContext('2d');
+        sCtx.imageSmoothingEnabled = true;
+        sCtx.imageSmoothingQuality = 'high';
+        sCtx.drawImage(tmp, 0, 0, nextW, nextH);
+        tmp = step;
+        curW = nextW; curH = nextH;
+    }
+
+    // Финальный шаг: точно в нужный размер
+    let scaledBase = document.createElement('canvas');
+    scaledBase.width = tW;
+    scaledBase.height = tH;
+    let sCtx = scaledBase.getContext('2d');
+    sCtx.imageSmoothingEnabled = true;
+    sCtx.imageSmoothingQuality = 'high';
+    sCtx.drawImage(tmp, 0, 0, tW, tH);
+
+    // Обводка в пикселях целевого размера (без умножения)
+    let sw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
+    let pad = Math.ceil(sw) + 2;
+
     let c = document.createElement('canvas');
-    c.width = hrW + pad * 2;
-    c.height = hrH + pad * 2;
+    c.width = tW + pad * 2;
+    c.height = tH + pad * 2;
     let ctx = c.getContext('2d');
-    
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    
+
     if (sw > 0) {
         const silCanvas = document.createElement('canvas');
-        silCanvas.width = hrW; silCanvas.height = hrH;
+        silCanvas.width = tW; silCanvas.height = tH;
         const silCtx = silCanvas.getContext('2d');
         silCtx.drawImage(scaledBase, 0, 0);
         silCtx.globalCompositeOperation = 'source-in';
         silCtx.fillStyle = '#ffffff';
-        silCtx.fillRect(0, 0, hrW, hrH);
-        
-        // 36 шагов для идеальной гладкости
-        const steps = 36; 
+        silCtx.fillRect(0, 0, tW, tH);
+
+        const steps = 36;
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
-            let ox = Math.round(Math.cos(angle) * sw);
-            let oy = Math.round(Math.sin(angle) * sw);
-            ctx.drawImage(silCanvas, Math.round(pad + ox), Math.round(pad + oy), hrW, hrH);
+            let ox = Math.cos(angle) * sw;
+            let oy = Math.sin(angle) * sw;
+            ctx.drawImage(silCanvas, pad + ox, pad + oy, tW, tH);
         }
     }
-    
-    ctx.drawImage(scaledBase, pad, pad, hrW, hrH);
-    // Сохраняем информацию о scaleMult, чтобы отрисовать его в 2 раза меньше
-    offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH, scaleMult: scaleMult };
+
+    ctx.drawImage(scaledBase, pad, pad, tW, tH);
+    // scaleMult = 1: кэш уже в финальном размере, drawImage будет 1-в-1
+    offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH, scaleMult: 1 };
 }
 
 // --- Логика вырезки ---
@@ -1417,21 +1414,16 @@ function drawScene() {
         
         persistentCtx.translate(cx, cy);
         persistentCtx.scale(o.anim.scale, o.anim.scale);
-        
-        // ИСПРАВЛЕНИЕ: При финальной отрисовке на основной canvas
-        // отключаем сглаживание — суперсэмпленный кэш уже содержит
-        // готовые данные в правильном разрешении, дополнительное сглаживание
-        // только размывает картинку
-        persistentCtx.imageSmoothingEnabled = false;
-        
-        // Размеры на экране зависят от множителя суперсэмплинга (в 2 раза меньше кэша)
-        let drawW = c.canvas.width / c.scaleMult;
-        let drawH = c.canvas.height / c.scaleMult;
-        
-        let drawOffsetX = Math.round(-drawW / 2);
-        let drawOffsetY = Math.round(-drawH / 2);
-        
-        persistentCtx.drawImage(c.canvas, drawOffsetX, drawOffsetY, drawW, drawH);
+
+        // Кэш уже в точном целевом размере — рисуем 1:1 без масштабирования.
+        persistentCtx.imageSmoothingEnabled = true;
+        persistentCtx.imageSmoothingQuality = 'high';
+
+        // cache.pad — отступ для обводки; центрируем по содержимому (tW/tH), не по всему canvas
+        let drawOffsetX = Math.round(-(c.tW / 2) - c.pad);
+        let drawOffsetY = Math.round(-(c.tH / 2) - c.pad);
+
+        persistentCtx.drawImage(c.canvas, drawOffsetX, drawOffsetY);
         
         persistentCtx.restore();
     });
