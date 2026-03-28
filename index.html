@@ -618,24 +618,24 @@ function createStylePreviewURL(style, font) {
         txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = "#42003d"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = "#61005a"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
     } else {
-        // Правильный порядок: самая толстая дальняя обводка -> обводка -> тень
+        // ИСПРАВЛЕНИЕ: Правильный баланс ширины линий для 3D тени и обводки
         if (style.outer2) {
-            txCtx.lineWidth = fontSize * 0.26; txCtx.strokeStyle = style.outer2; 
+            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer2; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
+            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else if (style.outer) {
-            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
+            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else {
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         }
     }
@@ -2040,25 +2040,24 @@ function drawBeautifulNick(ctx, text, w, h) {
         txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = "#42003d"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = "#61005a"; for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
     } else {
-        // Отрисовка внешней обводки и 3D тени (с поддержкой двойной обводки outer2)
+        // ИСПРАВЛЕНИЕ: Правильный баланс ширины линий для 3D тени и обводки
         if (style.outer2) {
-            txCtx.lineWidth = fontSize * 0.26; txCtx.strokeStyle = style.outer2; 
+            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer2; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
+            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else if (style.outer) {
-            txCtx.lineWidth = fontSize * 0.18; txCtx.strokeStyle = style.outer; 
+            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else {
-            // Если обводка выключена, используем только тень
-            txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         }
     }
