@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.6.7</title>
+<title>Новый функционал v0.6.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -110,7 +110,6 @@
 
   input[type="file"] { display: none; }
 
-  /* Обновленная сетка результатов */
   #result-box {
     display: none;
     width: 100%;
@@ -212,7 +211,6 @@
     font-size: 30px; font-family: 'Marvin', 'Lilita One', sans-serif; border-radius: 12px;
     text-align: center; width: 80%; outline: none; box-shadow: 0 5px 15px rgba(255,0,127,0.3);
   }
-  #wizard-preview-canvas { max-width: 90%; max-height: 50vh; border-radius: 12px; border: 2px solid #ff007f; box-shadow: 0 0 30px rgba(255,0,127,0.4); }
   
   /* --- ВСТРОЕННАЯ ПАНЕЛЬ СЛОЕВ --- */
   #layer-panel {
@@ -223,7 +221,7 @@
     background: #061d38;
     border-radius: 12px;
     padding: 15px;
-    display: none; /* Flex when active */
+    display: none; 
     flex-direction: column;
     gap: 10px;
     z-index: 50;
@@ -282,7 +280,6 @@
   }
   .layer-price-input:focus { border-color: #3bf83b; }
 
-  /* Controls for Stroke (+ / -) */
   .stroke-controls {
     display: flex;
     align-items: stretch;
@@ -339,14 +336,7 @@
     <h1>Шаг 2: Введи свой ник</h1>
     <p>Система сама добавит красивый 3D-текст и лучи на задний план.</p>
     <input type="text" id="wizard-nick-input" placeholder="ARTZA DONATE" value="ARTZA DONATE" maxlength="16">
-    <div class="btn" id="wizard-next-btn2" style="font-size: 20px; padding: 15px 40px;">Добавить ник и лучи</div>
-  </div>
-  
-  <div id="wizard-step3" class="wizard-step">
-    <h1>Шаг 3: Фон готов!</h1>
-    <p>Мы сгенерировали лучи и добавили твой ник. Теперь загрузим акции.</p>
-    <canvas id="wizard-preview-canvas"></canvas>
-    <div class="btn" id="wizard-finish-btn" style="font-size: 20px; padding: 15px 40px;">Перейти к вырезке акций</div>
+    <div class="btn" id="wizard-next-btn2" style="font-size: 20px; padding: 15px 40px;">Перейти к вырезке</div>
   </div>
 </div>
 
@@ -622,7 +612,7 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- Пред-рендеринг для максимальной скорости анимации ---
+// --- Пред-рендеринг для максимальной скорости и качества (Резкость) ---
 function generateOfferCache(offer) {
     let item = offer.ref;
     let sw = offer.hasStroke ? (offer.strokeWidth || 4) : 0;
@@ -648,12 +638,14 @@ function generateOfferCache(offer) {
         silCtx.fillStyle = '#ffffff';
         silCtx.fillRect(0, 0, cw, ch);
         
-        const steps = 12;
+        // Рисуем обводку в 36 шагов для идеального качества без угловатостей
+        const steps = 36;
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
             let ox = Math.round(Math.cos(angle) * sw);
             let oy = Math.round(Math.sin(angle) * sw);
-            ctx.drawImage(silCanvas, pad + ox, pad + oy, cw, ch);
+            // Жесткое округление координат спасает от субпиксельного размытия
+            ctx.drawImage(silCanvas, Math.round(pad + ox), Math.round(pad + oy), cw, ch);
         }
     }
     
@@ -1146,7 +1138,7 @@ function setupPersistentCanvas() {
     drawBeautifulNick(cachedTextCanvas.getContext('2d'), window.layerState.textValue, rawBgImage.width, rawBgImage.height);
 }
 
-// --- Калькуляция целевой сетки для анимации ---
+// --- Калькуляция целевой сетки для анимации (с округлением для резкости) ---
 function calculateLayoutTarget() {
   if (!rawBgImage) return;
 
@@ -1204,11 +1196,19 @@ function calculateLayoutTarget() {
      
      rowCards.forEach(o => {
         let ratio = o.ref.canvas.width / o.ref.canvas.height;
-        o.target = { x: currentX, y: currentY, w: bestH * ratio, h: bestH, scale: 1, alpha: 1 };
+        // ЖЕСТКОЕ ОКРУГЛЕНИЕ математики для идеальной резкости
+        o.target = { 
+            x: Math.round(currentX), 
+            y: Math.round(currentY), 
+            w: Math.round(bestH * ratio), 
+            h: Math.round(bestH), 
+            scale: 1, 
+            alpha: 1 
+        };
         
         // Старт для свежих объектов из центра будущего положения
         if (o.anim.w === null) {
-            o.anim.x = currentX; o.anim.y = currentY; o.anim.w = o.target.w; o.anim.h = o.target.h; o.anim.scale = 0; o.anim.alpha = 0;
+            o.anim.x = o.target.x; o.anim.y = o.target.y; o.anim.w = o.target.w; o.anim.h = o.target.h; o.anim.scale = 0; o.anim.alpha = 0;
         }
         currentX += (bestH * ratio) + gapX;
      });
@@ -1315,20 +1315,20 @@ function drawScene() {
         persistentCtx.shadowOffsetX = 0;                  
         persistentCtx.shadowOffsetY = 16;  
         
-        // Рисуем из центра
-        let cx = o.anim.x + o.anim.w/2;
-        let cy = o.anim.y + o.anim.h/2;
+        // ЖЕСТКОЕ округление координат для подавления субпиксельного мыла
+        let cx = Math.round(o.anim.x + o.anim.w/2);
+        let cy = Math.round(o.anim.y + o.anim.h/2);
         
         persistentCtx.translate(cx, cy);
         persistentCtx.scale(o.anim.scale, o.anim.scale);
         
         let ratio = o.anim.w / o.ref.canvas.width;
-        let drawW = c.canvas.width * ratio;
-        let drawH = c.canvas.height * ratio;
+        let drawW = Math.round(c.canvas.width * ratio);
+        let drawH = Math.round(c.canvas.height * ratio);
         
         persistentCtx.imageSmoothingEnabled = true;
         persistentCtx.imageSmoothingQuality = 'high';
-        persistentCtx.drawImage(c.canvas, -drawW/2, -drawH/2, drawW, drawH);
+        persistentCtx.drawImage(c.canvas, Math.round(-drawW/2), Math.round(-drawH/2), drawW, drawH);
         
         persistentCtx.restore();
     });
@@ -1418,13 +1418,9 @@ function drawBeautifulNick(ctx, text, w, h) {
   const wizardOverlay = document.getElementById('wizard-overlay');
   const step1 = document.getElementById('wizard-step1');
   const step2 = document.getElementById('wizard-step2');
-  const step3 = document.getElementById('wizard-step3');
   const wizardBgInput = document.getElementById('wizard-bg-input');
   const wizardUploadBtn = document.getElementById('wizard-upload-bg-btn');
   const wizardNextBtn2 = document.getElementById('wizard-next-btn2');
-  const wizardFinishBtn = document.getElementById('wizard-finish-btn');
-  const wizardNickInput = document.getElementById('wizard-nick-input');
-  const wizardPreviewCanvas = document.getElementById('wizard-preview-canvas');
 
   document.querySelector('.top-controls').style.display = 'none';
   document.getElementById('dropzone').style.display = 'none';
@@ -1454,24 +1450,8 @@ function drawBeautifulNick(ctx, text, w, h) {
     globalAssets.starImg = await loadImage('Star.png');
     rawBgImage = uploadedBaseImg;
 
-    wizardPreviewCanvas.width = rawBgImage.width;
-    wizardPreviewCanvas.height = rawBgImage.height;
-    
-    // Временный рендер для превью
-    let ctx = wizardPreviewCanvas.getContext('2d');
-    ctx.drawImage(rawBgImage, 0, 0);
-    if(globalAssets.luchImg) { ctx.save(); ctx.globalCompositeOperation = "overlay"; ctx.drawImage(globalAssets.luchImg, -(rawBgImage.width), -(rawBgImage.height), rawBgImage.width*2, rawBgImage.height*2); ctx.restore(); }
-    else drawFallbackRays(ctx, rawBgImage.width, rawBgImage.height);
-    if(globalAssets.starImg) drawStars(ctx, globalAssets.starImg, rawBgImage.width, rawBgImage.height);
-    drawWatermarks(ctx, nick, rawBgImage.width, rawBgImage.height);
-    drawBeautifulNick(ctx, nick, rawBgImage.width, rawBgImage.height);
-    
-    step2.classList.remove('active');
-    step3.classList.add('active');
-  };
-
-  wizardFinishBtn.onclick = () => {
-    document.getElementById('bgName').innerText = "✅ Фон с ником и лучами сгенерирован";
+    // СРАЗУ ЗАКРЫВАЕМ ВИЗАРД И ПЕРЕХОДИМ К ВЫРЕЗКЕ
+    document.getElementById('bgName').innerText = "✅ Фон с ником загружен";
     document.getElementById('old-bg-control').style.display = 'none';
     wizardOverlay.style.display = 'none';
     document.querySelector('.top-controls').style.display = 'flex';
