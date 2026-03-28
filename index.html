@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.8.4</title>
+<title>Новый функционал v0.7.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -404,13 +404,6 @@
 <div class="top-controls">
   <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 15px;" id="old-bg-control">
     <label style="margin:0;">Свой фон:</label>
-    <div class="color-presets" id="top-color-presets" style="gap: 10px; margin-bottom: 5px;">
-       <div class="color-btn top-btn" style="background: radial-gradient(circle, #00ff66, #003311)" data-color="green" title="Зелёный"></div>
-       <div class="color-btn top-btn" style="background: radial-gradient(circle, #00c3ff, #0011aa)" data-color="blue" title="Синий"></div>
-       <div class="color-btn top-btn" style="background: radial-gradient(circle, #ffb300, #662200)" data-color="orange" title="Оранжевый"></div>
-       <div class="color-btn top-btn" style="background: radial-gradient(circle, #d400ff, #3b0099)" data-color="purple" title="Фиолетовый"></div>
-       <div class="color-btn top-btn" style="background: radial-gradient(circle, #666666, #050505)" data-color="black" title="Чёрный"></div>
-    </div>
     <div class="btn" id="bgSelectBtn" style="font-size: 14px; padding: 10px 20px;">Загрузить картинку</div>
     <span id="bgName" style="font-size: 12px; color: #ff007f;">Фон не выбран</span>
   </div>
@@ -541,19 +534,6 @@ bgInput.onchange = (e) => {
     img.src = URL.createObjectURL(file);
   }
 };
-
-// Обработчик кнопок цвета в верхнем меню
-const topColorBtns = document.querySelectorAll('#top-color-presets .color-btn');
-topColorBtns.forEach(btn => {
-    btn.onclick = async () => {
-        let color = btn.getAttribute('data-color');
-        window.layerState.isGeneratedBg = true;
-        rawBgImage = await createGradientBg(color);
-        bgName.innerText = `Цвет: ${color}`;
-        renderLayerPanel();
-        if (allGeneratedCards.length > 0) calculateLayoutTarget();
-    };
-});
 
 function updateDropzoneUI() {
   if (stagedFiles.length > 0) {
