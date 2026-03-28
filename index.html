@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.8</title>
+<title>Новый функционал v0.7.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -151,7 +151,6 @@
     max-width: 1000px;
   }
 
-  /* ИСПРАВЛЕНИЕ: canvas не масштабируется CSS — только ограничиваем отображение через обёртку */
   .canvas-display-wrapper {
     width: 100%;
     overflow: hidden;
@@ -165,11 +164,10 @@
     height: auto;
     display: block;
     border-radius: 12px;
-    image-rendering: -webkit-optimize-contrast; /* Резкость при масштабировании вниз */
+    image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
 
-  /* Старый стиль canvas оставляем для обратной совместимости */
   canvas {
     max-width: 100%;
     max-height: 75vh;
@@ -231,7 +229,6 @@
     text-align: center; width: 80%; outline: none; box-shadow: 0 5px 15px rgba(255,0,127,0.3);
   }
   
-  /* --- ВСТРОЕННАЯ ПАНЕЛЬ СЛОЕВ --- */
   #layer-panel {
     position: sticky;
     top: 100px;
@@ -299,7 +296,6 @@
   }
   .layer-price-input:focus { border-color: #3bf83b; }
 
-  /* Глобальные контролы обводки */
   .global-stroke-control {
     display: flex;
     align-items: center;
@@ -416,15 +412,13 @@ const bgInput = document.getElementById("bgInput");
 const bgSelectBtn = document.getElementById("bgSelectBtn");
 const bgName = document.getElementById("bgName");
 
-// --- Глобальные переменные ---
 let rawBgImage = null; 
 let globalAssets = { luchImg: null, starImg: null };
 
-// Состояние анимации и сцены
 window.layerState = {
     textVisible: true,
     textValue: "ARTZA DONATE",
-    globalStrokeWidth: 2, // Глобальная толщина по умолчанию
+    globalStrokeWidth: 2, 
     offers: [] 
 };
 
@@ -433,7 +427,6 @@ let filesProcessed = 0;
 let filesToProcess = 0;
 let stagedFiles = [];
 
-// Холсты для постоянного рендеринга
 let persistentCanvas = null;
 let persistentCtx = null;
 let cachedTextCanvas = null;
@@ -524,11 +517,9 @@ function processImages(files) {
   }
 }
 
-// --- Панель слоев ---
 function renderLayerPanel() {
     layerPanel.innerHTML = '';
     
-    // Блок общей обводки
     let globalControl = document.createElement('div');
     globalControl.className = 'layer-row';
     globalControl.style.justifyContent = 'center';
@@ -547,7 +538,6 @@ function renderLayerPanel() {
     `;
     layerPanel.appendChild(globalControl);
 
-    // Слой текста
     let textRow = document.createElement('div');
     textRow.className = 'layer-row';
     textRow.innerHTML = `
@@ -557,7 +547,6 @@ function renderLayerPanel() {
     `;
     layerPanel.appendChild(textRow);
 
-    // Акции
     window.layerState.offers.forEach((offer, idx) => {
         let isFree = offer.price.trim().toUpperCase() === 'FREE';
         let inputColorStyle = isFree ? 'color: #3bf83b;' : 'color: #fff;';
@@ -671,14 +660,11 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
-// --- Кэш акций: рендерим в точный целевой размер через ступенчатое уменьшение ---
 function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
     let tW = targetW || item.canvas.width;
     let tH = targetH || item.canvas.height;
 
-    // Ступенчатое уменьшение: каждый шаг не более чем в 2 раза.
-    // Это даёт максимальную резкость без артефактов.
     let tmp = item.canvas;
     let curW = tmp.width;
     let curH = tmp.height;
@@ -696,7 +682,6 @@ function generateOfferCache(offer, targetW, targetH) {
         curW = nextW; curH = nextH;
     }
 
-    // Финальный шаг: точно в нужный размер
     let scaledBase = document.createElement('canvas');
     scaledBase.width = tW;
     scaledBase.height = tH;
@@ -705,7 +690,6 @@ function generateOfferCache(offer, targetW, targetH) {
     sCtx.imageSmoothingQuality = 'high';
     sCtx.drawImage(tmp, 0, 0, tW, tH);
 
-    // Обводка в пикселях целевого размера (без умножения)
     let sw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
     let pad = Math.ceil(sw) + 2;
 
@@ -735,11 +719,9 @@ function generateOfferCache(offer, targetW, targetH) {
     }
 
     ctx.drawImage(scaledBase, pad, pad, tW, tH);
-    // scaleMult = 1: кэш уже в финальном размере, drawImage будет 1-в-1
     offer.cache = { canvas: c, pad: pad, tW: tW, tH: tH, scaleMult: 1 };
 }
 
-// --- Логика вырезки ---
 function autoReplacePrice(ctx, w, h) {
   const imgData = ctx.getImageData(0, 0, w, h);
   const d = imgData.data;
@@ -1174,7 +1156,6 @@ function checkBatchCompletion() {
   }
 }
 
-// --- Инициализация Главного Холста для Анимации ---
 function setupPersistentCanvas() {
     if (!persistentCanvas) {
         persistentCanvas = document.createElement('canvas');
@@ -1190,29 +1171,12 @@ function setupPersistentCanvas() {
         title.style.color = "#fff";
         title.style.fontWeight = "bold";
 
-        // ИСПРАВЛЕНИЕ: оборачиваем canvas в div, который ограничивает отображение
-        // Сам canvas остаётся полного размера — качество не теряется
         let canvasWrapper = document.createElement('div');
         canvasWrapper.className = 'canvas-display-wrapper';
         canvasWrapper.appendChild(persistentCanvas);
         
         let btnWrap = document.createElement('div');
         btnWrap.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;';
-
-        let btn = document.createElement('a');
-        btn.className = 'btn';
-        btn.style.cssText = 'background:#555;box-shadow:0 4px 15px rgba(0,0,0,0.4);font-size:14px;';
-        btn.innerText = "💾 Обычное";
-        btn.onclick = (e) => {
-            e.preventDefault();
-            try {
-                drawScene();
-                const link = document.createElement('a');
-                link.download = 'result_with_bg.png';
-                link.href = persistentCanvas.toDataURL('image/png');
-                link.click();
-            } catch(err) { alert('Браузер заблокировал скачивание.'); }
-        };
 
         let btnHQ = document.createElement('a');
         btnHQ.className = 'btn';
@@ -1237,7 +1201,6 @@ function setupPersistentCanvas() {
             }, 50);
         };
 
-        btnWrap.appendChild(btn);
         btnWrap.appendChild(btnHQ);
 
         container.appendChild(title);
@@ -1254,7 +1217,6 @@ function setupPersistentCanvas() {
     drawBeautifulNick(cachedTextCanvas.getContext('2d'), window.layerState.textValue, rawBgImage.width, rawBgImage.height);
 }
 
-// --- Калькуляция целевой сетки для анимации ---
 function calculateLayoutTarget() {
   if (!rawBgImage) return;
 
@@ -1343,7 +1305,6 @@ function calculateLayoutTarget() {
   startAnimation();
 }
 
-// --- Анимационный цикл (Render Loop) ---
 function startAnimation() {
    if (!animReq) animReq = requestAnimationFrame(renderLoop);
 }
@@ -1378,16 +1339,13 @@ function renderLoop() {
    }
 }
 
-// --- Отрисовка Кадра ---
 function drawScene() {
     if (!persistentCtx) return;
     let w = persistentCanvas.width; let h = persistentCanvas.height;
     persistentCtx.clearRect(0, 0, w, h);
     
-    // Задний фон
     if (rawBgImage) persistentCtx.drawImage(rawBgImage, 0, 0, w, h);
     
-    // Лучи
     if (globalAssets.luchImg) {
         persistentCtx.save();
         persistentCtx.globalCompositeOperation = "overlay"; 
@@ -1398,15 +1356,12 @@ function drawScene() {
         drawFallbackRays(persistentCtx, w, h);
     }
     
-    // Звезды
     if (globalAssets.starImg) drawStars(persistentCtx, globalAssets.starImg, w, h);
     
-    // Водяные знаки
     if (window.layerState.textValue) {
         drawWatermarks(persistentCtx, window.layerState.textValue, w, h);
     }
     
-    // Главный текст (анимирован, исправлено позиционирование без дробных чисел)
     if (cachedTextCanvas && animText.alpha > 0.01) {
         persistentCtx.save();
         persistentCtx.globalAlpha = animText.alpha;
@@ -1421,7 +1376,6 @@ function drawScene() {
         persistentCtx.restore();
     }
     
-    // Акции (анимированы)
     window.layerState.offers.forEach(o => {
         if (o.anim.alpha < 0.01 || o.anim.scale < 0.01) return;
         let c = o.cache;
@@ -1441,11 +1395,9 @@ function drawScene() {
         persistentCtx.translate(cx, cy);
         persistentCtx.scale(o.anim.scale, o.anim.scale);
 
-        // Кэш уже в точном целевом размере — рисуем 1:1 без масштабирования.
         persistentCtx.imageSmoothingEnabled = true;
         persistentCtx.imageSmoothingQuality = 'high';
 
-        // cache.pad — отступ для обводки; центрируем по содержимому (tW/tH), не по всему canvas
         let drawOffsetX = Math.round(-(c.tW / 2) - c.pad);
         let drawOffsetY = Math.round(-(c.tH / 2) - c.pad);
 
@@ -1455,7 +1407,6 @@ function drawScene() {
     });
 }
 
-// --- Эффекты ---
 function drawFallbackRays(ctx, w, h) {
     let cx = Math.round(w / 2); let cy = Math.round(h / 2); let radius = Math.sqrt(w*w + h*h); 
     let numRays = 30; let angleStep = (Math.PI * 2) / numRays;
@@ -1508,7 +1459,6 @@ function drawStars(ctx, starImg, w, h) {
 
 function drawBeautifulNick(ctx, text, w, h) {
     let fontSize = Math.floor(h * 0.12); if (fontSize < 30) fontSize = 30;
-    // Округляем координаты текста для лучшей резкости
     let x = Math.round(w / 2); 
     let y = Math.round(h * 0.06 + (fontSize / 2)); 
     let shadowDepth = Math.max(1, Math.floor(fontSize * 0.10));
@@ -1536,12 +1486,15 @@ function drawBeautifulNick(ctx, text, w, h) {
     txCtx.drawImage(tempCanvas, 0, 0);
 
     ctx.save();
-    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; ctx.shadowBlur = 21; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 16;                 
+    let scaleMult = h / 1080;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; 
+    ctx.shadowBlur = Math.max(5, Math.round(21 * scaleMult)); 
+    ctx.shadowOffsetX = 0; 
+    ctx.shadowOffsetY = Math.max(4, Math.round(16 * scaleMult));                 
     ctx.drawImage(textCanvas, 0, 0);
     ctx.restore();
 }
 
-// --- Инициализация Визарда ---
 (function initWizard() {
   const wizardOverlay = document.getElementById('wizard-overlay');
   const step1 = document.getElementById('wizard-step1');
@@ -1587,20 +1540,15 @@ function drawBeautifulNick(ctx, text, w, h) {
   };
 })();
 
-// --- HD-рендер: финальный PNG в оригинальном разрешении без потери качества ---
 function renderHighQuality() {
     if (!rawBgImage) throw new Error('Нет фона');
 
     let bgW = rawBgImage.width;
     let bgH = rawBgImage.height;
 
-    // Минимальная ширина итогового PNG = 3840px (4K). 
-    // Для фона 1024 → scale=4 → итог 4096×2304
-    // Для фона 1920 → scale=2 → итог 3840×2160
     let scale = Math.max(1, Math.ceil(3840 / bgW));
     let hqW = bgW * scale;
     let hqH = bgH * scale;
-    // Жёсткий потолок чтобы не убить браузер
     if (hqW > 8192) { scale = Math.floor(8192 / bgW); hqW = bgW * scale; hqH = bgH * scale; }
 
     let hqCanvas = document.createElement('canvas');
@@ -1610,10 +1558,8 @@ function renderHighQuality() {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // 1. Фон — масштабируем с высоким качеством
     ctx.drawImage(rawBgImage, 0, 0, hqW, hqH);
 
-    // 2. Лучи
     if (globalAssets.luchImg) {
         ctx.save();
         ctx.globalCompositeOperation = 'overlay';
@@ -1624,36 +1570,27 @@ function renderHighQuality() {
         drawFallbackRays(ctx, hqW, hqH);
     }
 
-    // 3. Звёзды
     if (globalAssets.starImg) drawStars(ctx, globalAssets.starImg, hqW, hqH);
 
-    // 4. Водяные знаки (перерисовываем в полном разрешении)
     if (window.layerState.textValue) drawWatermarks(ctx, window.layerState.textValue, hqW, hqH);
 
-    // 5. Главный текст — рисуем заново в HD прямо на ctx, без промежуточного canvas
     if (window.layerState.textVisible && window.layerState.textValue) {
         drawBeautifulNick(ctx, window.layerState.textValue, hqW, hqH);
     }
 
-    // 6. Акции — каждая рендерится заново в HD-размере из исходного canvas
     window.layerState.offers.forEach(o => {
         if (!o.visible || !o.target.w) return;
 
-        // Целевые координаты в HD-пространстве
         let dstX = Math.round(o.target.x * scale);
         let dstY = Math.round(o.target.y * scale);
         let dstW = Math.round(o.target.w * scale);
         let dstH = Math.round(o.target.h * scale);
 
-        // Исходник: оригинальный canvas с вырезанной акцией + текст цены уже нарисован на нём
-        // Но текст цены нарисован в маленьком размере — нужно перерисовать его в HD
-        // Шаг 1: берём "чистый" canvas без цены (blankedImgData) и масштабируем его в HD
         let info = o.ref.info;
         let srcCanvas = o.ref.canvas;
         let srcW = srcCanvas.width;
         let srcH = srcCanvas.height;
 
-        // Создаём HD-canvas для этой акции
         let hdCard = document.createElement('canvas');
         hdCard.width = dstW;
         hdCard.height = dstH;
@@ -1661,49 +1598,11 @@ function renderHighQuality() {
         hdCtx.imageSmoothingEnabled = true;
         hdCtx.imageSmoothingQuality = 'high';
 
-        // Ступенчатое уменьшение исходника до HD-размера
-        let tmp = srcCanvas;
-        let curW = srcW, curH = srcH;
-        // Если исходник МЕНЬШЕ HD — увеличиваем (акция из маленького скриншота)
-        // Если больше — уменьшаем ступенчато
-        if (curW <= dstW && curH <= dstH) {
-            // Прямое масштабирование вверх
-            hdCtx.drawImage(tmp, 0, 0, dstW, dstH);
-        } else {
-            while (curW > dstW * 1.5 || curH > dstH * 1.5) {
-                let nextW = Math.max(dstW, Math.round(curW / 2));
-                let nextH = Math.max(dstH, Math.round(curH / 2));
-                let step = document.createElement('canvas');
-                step.width = nextW; step.height = nextH;
-                let sc = step.getContext('2d');
-                sc.imageSmoothingEnabled = true;
-                sc.imageSmoothingQuality = 'high';
-                sc.drawImage(tmp, 0, 0, nextW, nextH);
-                tmp = step;
-                curW = nextW; curH = nextH;
-            }
-            hdCtx.drawImage(tmp, 0, 0, dstW, dstH);
-        }
-
-        // Шаг 2: поверх рисуем текст цены заново в HD (стираем старый маленький текст не нужно —
-        // blankedImgData уже записан в srcCanvas, текст нарисован поверх пикселей цены)
-        // Масштабируем координаты текста
-        let priceScaleX = dstW / srcW;
-        let priceScaleY = dstH / srcH;
-        let hdInfo = {
-            textX: info.textX * priceScaleX,
-            textY: info.textY * priceScaleY,
-            boxHeight: info.boxHeight * priceScaleY
-        };
-        // Стираем старый маленький текст: рисуем blankedImgData масштабированно
         if (info.blankedImgData) {
             let blankCanvas = document.createElement('canvas');
             blankCanvas.width = srcW; blankCanvas.height = srcH;
             blankCanvas.getContext('2d').putImageData(info.blankedImgData, 0, 0);
-            hdCtx.clearRect(0, 0, dstW, dstH);
-            hdCtx.imageSmoothingEnabled = true;
-            hdCtx.imageSmoothingQuality = 'high';
-            // Ступенчато уменьшаем blanked canvas
+
             let btmp = blankCanvas;
             let bcW = srcW, bcH = srcH;
             if (bcW > dstW || bcH > dstH) {
@@ -1720,18 +1619,43 @@ function renderHighQuality() {
                 }
             }
             hdCtx.drawImage(btmp, 0, 0, dstW, dstH);
-            // Рисуем текст цены заново в HD-размере
+
+            let priceScaleX = dstW / srcW;
+            let priceScaleY = dstH / srcH;
+            let hdInfo = {
+                textX: info.textX * priceScaleX,
+                textY: info.textY * priceScaleY,
+                boxHeight: info.boxHeight * priceScaleY
+            };
             drawPriceText(hdCtx, dstW, dstH, o.price, hdInfo);
+        } else {
+            let tmp = srcCanvas;
+            let curW = srcW, curH = srcH;
+            if (curW > dstW || curH > dstH) {
+                while (curW > dstW * 1.5 || curH > dstH * 1.5) {
+                    let nextW = Math.max(dstW, Math.round(curW / 2));
+                    let nextH = Math.max(dstH, Math.round(curH / 2));
+                    let step = document.createElement('canvas');
+                    step.width = nextW; step.height = nextH;
+                    let sc = step.getContext('2d');
+                    sc.imageSmoothingEnabled = true;
+                    sc.imageSmoothingQuality = 'high';
+                    sc.drawImage(tmp, 0, 0, nextW, nextH);
+                    tmp = step; curW = nextW; curH = nextH;
+                }
+            }
+            hdCtx.drawImage(tmp, 0, 0, dstW, dstH);
         }
 
-        // Шаг 3: обводка в HD
-        let sw = o.hasStroke ? window.layerState.globalStrokeWidth * scale : 0;
+        let sw = o.hasStroke ? Math.round(window.layerState.globalStrokeWidth * scale) : 0;
+        let pad = sw + 2;
 
-        ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-        ctx.shadowBlur = Math.round(21 * scale);
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = Math.round(16 * scale);
+        let strokedCard = document.createElement('canvas');
+        strokedCard.width = dstW + pad * 2;
+        strokedCard.height = dstH + pad * 2;
+        let stCtx = strokedCard.getContext('2d');
+        stCtx.imageSmoothingEnabled = true;
+        stCtx.imageSmoothingQuality = 'high';
 
         if (sw > 0) {
             let silCanvas = document.createElement('canvas');
@@ -1745,13 +1669,20 @@ function renderHighQuality() {
             const steps = 36;
             for (let i = 0; i < steps; i++) {
                 let angle = (i / steps) * Math.PI * 2;
-                ctx.drawImage(silCanvas, dstX + Math.cos(angle) * sw, dstY + Math.sin(angle) * sw, dstW, dstH);
+                stCtx.drawImage(silCanvas, pad + Math.cos(angle) * sw, pad + Math.sin(angle) * sw, dstW, dstH);
             }
         }
+        stCtx.drawImage(hdCard, pad, pad, dstW, dstH);
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = Math.round(21 * scale);
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = Math.round(16 * scale);
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(hdCard, dstX, dstY, dstW, dstH);
+        ctx.drawImage(strokedCard, dstX - pad, dstY - pad);
         ctx.restore();
     });
 
