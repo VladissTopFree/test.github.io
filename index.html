@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v0.9.4</title>
+<title>Интерфейс v0.9.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.otf') format('opentype'); }
@@ -586,6 +586,85 @@
   #ios-btn-create:active {
     transform: scale(0.97);
   }
+
+  /* ========================================================
+     ДИЗАЙН ШАГОВ (WIZARD) В СТИЛЕ iOS
+     ======================================================== */
+  #wizard-overlay {
+    background: #F2F2F7; /* Светлый фон как у дашборда */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  #wizard-step1 {
+    justify-content: flex-start;
+    padding-top: 10vh;
+  }
+
+  .ios-progress { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .ios-progress .step { 
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+    font-weight: 500; font-size: 18px; border: 1.5px solid #8E8E93; color: #8E8E93; background: #F2F2F7; position: relative; z-index: 2; 
+  }
+  .ios-progress .step.active { background: #00A0FF; color: #fff; border-color: #00A0FF; }
+  .ios-progress .step.small { width: 24px; height: 24px; font-size: 14px; }
+  .ios-progress .line { width: 24px; height: 1.5px; background: #8E8E93; margin: 0 -2px; z-index: 1; }
+  .ios-progress .line.active { background: #00A0FF; }
+
+  .ios-wizard-title { font-size: 38px; font-weight: 700; color: #000; margin-bottom: 12px; text-align: center; }
+  .ios-wizard-subtitle { font-size: 17px; color: #8E8E93; text-align: center; line-height: 1.3; margin-bottom: 35px; font-weight: 400; max-width: 320px;}
+
+  .ios-color-presets { display: flex; gap: 14px; justify-content: center; margin-bottom: 24px; }
+  .ios-color-btn-wrap {
+    padding: 4px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .ios-color-btn-wrap.selected { border-color: #34C759; }
+  .ios-color-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    box-shadow: inset -2px -4px 8px rgba(0,0,0,0.25), inset 2px 2px 8px rgba(255,255,255,0.4), 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  .ios-or-text { color: #8E8E93; font-size: 16px; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  .ios-upload-link { color: #00A0FF; font-size: 22px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; -webkit-tap-highlight-color: transparent;}
+  .ios-upload-link:active { opacity: 0.6; }
+  .ios-upload-link svg { fill: none; stroke: currentColor; width: 9px; height: 15px; margin-top: 2px; stroke-width: 2.5px; stroke-linecap: round; stroke-linejoin: round;}
+
+  .ios-btn-next {
+    background: #00A0FF;
+    color: #fff;
+    border: none;
+    border-radius: 40px;
+    padding: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    width: calc(100% - 40px);
+    max-width: 400px;
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.2s, transform 0.2s;
+    display: none; /* Скрыта по умолчанию */
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ios-btn-next.show {
+    display: block;
+    animation: slideUpFade 0.3s ease-out forwards;
+  }
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .ios-btn-next:active { opacity: 0.8; transform: translate(-50%, 0) scale(0.97); }
+
+  /* Временные стили для Шага 2, чтобы текст был читаем на светлом фоне */
+  #wizard-step2 h1 { color: #000; text-shadow: none; }
+  #wizard-step2 p { color: #8E8E93; }
 </style>
 </head>
 <body>
@@ -700,21 +779,36 @@
 
 <div id="wizard-overlay" style="display: none;">
   <div id="wizard-step1" class="wizard-step active">
-    <h1>Шаг 1: Загрузи холст для фона</h1>
-    <p>Выбери один из готовых цветов или загрузи свою пустую комнату.</p>
     
-    <div class="color-presets" id="wizard-color-presets">
-       <div class="color-btn" style="background: radial-gradient(circle, #00ff66, #003311)" data-color="green" title="Зелёный"></div>
-       <div class="color-btn" style="background: radial-gradient(circle, #00c3ff, #0011aa)" data-color="blue" title="Синий"></div>
-       <div class="color-btn" style="background: radial-gradient(circle, #ffb300, #662200)" data-color="orange" title="Оранжевый"></div>
-       <div class="color-btn" style="background: radial-gradient(circle, #d400ff, #3b0099)" data-color="purple" title="Фиолетовый"></div>
-       <div class="color-btn" style="background: radial-gradient(circle, #666666, #050505)" data-color="black" title="Чёрный"></div>
+    <div class="ios-progress">
+      <div class="step active">1</div>
+      <div class="line active"></div>
+      <div class="step">2</div>
+      <div class="line"></div>
+      <div class="step small">3</div>
+    </div>
+
+    <div class="ios-wizard-title">Создание акции</div>
+    <div class="ios-wizard-subtitle">Фон. Выбери один из готовых цветов<br>или загрузи свой готовый фон</div>
+    
+    <div class="ios-color-presets" id="wizard-color-presets">
+       <div class="ios-color-btn-wrap" data-color="green"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #5ee568, #168625)"></div></div>
+       <div class="ios-color-btn-wrap" data-color="blue"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #46b3ff, #004d9c)"></div></div>
+       <div class="ios-color-btn-wrap" data-color="orange"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #ffcc00, #b35900)"></div></div>
+       <div class="ios-color-btn-wrap" data-color="purple"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #c861ff, #510087)"></div></div>
+       <div class="ios-color-btn-wrap" data-color="black"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #666, #050505)"></div></div>
     </div>
     
-    <div style="color: #aaa; margin: -10px 0 10px 0; font-size: 14px;">ИЛИ</div>
+    <div class="ios-or-text">ИЛИ</div>
     
-    <div class="btn" id="wizard-upload-bg-btn" style="font-size: 20px; padding: 15px 40px;">Загрузить свою картинку</div>
+    <div class="ios-upload-link" id="wizard-upload-bg-btn">
+       <span id="wizard-upload-text">Загрузить фон</span>
+       <svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>
+    </div>
     <input type="file" id="wizard-bg-input" accept="image/*" style="display:none;">
+
+    <!-- Кнопка Далее (появляется только после выбора) -->
+    <button id="wizard-next-btn1" class="ios-btn-next">Далее</button>
   </div>
   
   <div id="wizard-step2" class="wizard-step">
@@ -1119,7 +1213,7 @@ function renderLayerPanel() {
         expandContentStyle.style.paddingTop = '0';
         
         let styleGrid = document.createElement('div');
-        styleGrid.style.cssText = 'display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;'; // Сетка 5 колонок
+        styleGrid.style.cssText = 'display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;';
         TEXT_STYLES.forEach((st, sIdx) => {
             let sBtn = document.createElement('div');
             sBtn.style.height = '42px';
@@ -2340,9 +2434,10 @@ function drawBeautifulNick(ctx, text, w, h) {
   const step2 = document.getElementById('wizard-step2');
   const wizardBgInput = document.getElementById('wizard-bg-input');
   const wizardUploadBtn = document.getElementById('wizard-upload-bg-btn');
+  const wizardNextBtn1 = document.getElementById('wizard-next-btn1');
   const wizardNextBtn2 = document.getElementById('wizard-next-btn2');
   const wizardNickInput = document.getElementById('wizard-nick-input');
-  const wizardColorBtns = document.querySelectorAll('#wizard-color-presets .color-btn');
+  const wizardColorWraps = document.querySelectorAll('#wizard-color-presets .ios-color-btn-wrap');
 
   // Изначально прячем старый интерфейс, пока включен новый Дашборд
   // Настройки отображения уже заданы инлайновыми стилями
@@ -2350,11 +2445,22 @@ function drawBeautifulNick(ctx, text, w, h) {
   let uploadedBaseImg = new Image();
   let selectedColor = null;
 
-  wizardColorBtns.forEach(btn => {
-     btn.onclick = () => {
-         selectedColor = btn.getAttribute('data-color');
-         step1.classList.remove('active');
-         step2.classList.add('active');
+  function checkStep1Ready() {
+    if (selectedColor || uploadedBaseImg.src) {
+        wizardNextBtn1.classList.add('show');
+    } else {
+        wizardNextBtn1.classList.remove('show');
+    }
+  }
+
+  wizardColorWraps.forEach(wrap => {
+     wrap.onclick = () => {
+         wizardColorWraps.forEach(w => w.classList.remove('selected'));
+         wrap.classList.add('selected');
+         selectedColor = wrap.getAttribute('data-color');
+         uploadedBaseImg.removeAttribute('src'); // сбрасываем картинку, если выбран цвет
+         document.getElementById('wizard-upload-text').innerText = "Загрузить фон"; // сбрасываем текст
+         checkStep1Ready();
      };
   });
 
@@ -2363,18 +2469,26 @@ function drawBeautifulNick(ctx, text, w, h) {
   wizardBgInput.onchange = (e) => {
     if (e.target.files && e.target.files[0]) {
       selectedColor = null;
+      wizardColorWraps.forEach(w => w.classList.remove('selected'));
       uploadedBaseImg.onload = () => {
-        step1.classList.remove('active');
-        step2.classList.add('active');
+        document.getElementById('wizard-upload-text').innerText = "Фон выбран";
+        checkStep1Ready();
       };
       uploadedBaseImg.src = URL.createObjectURL(e.target.files[0]);
     }
+  };
+
+  // Обработчик кнопки Далее на 1 шаге
+  wizardNextBtn1.onclick = () => {
+    step1.classList.remove('active');
+    step2.classList.add('active');
   };
 
   const loadImage = (src) => new Promise((resolve) => {
     const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src;
   });
 
+  // Обработчик финальной кнопки перехода к вырезке (Шаг 2)
   wizardNextBtn2.onclick = async () => {
     let nick = wizardNickInput.value.trim().substring(0, 16) || "ARTZA DONATE";
     window.layerState.textValue = nick;
