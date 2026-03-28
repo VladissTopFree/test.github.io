@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новый функционал v0.7.2</title>
+<title>Новый функционал v0.7.3 - Идеальная резкость</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face {
@@ -652,13 +652,47 @@ function downloadCanvas(canvas, filename) {
     }
 }
 
+// --- ИСПРАВЛЕНИЕ КАЧЕСТВА: Функция повышения резкости (Unsharp Mask) ---
+// Применяется после уменьшения картинки, чтобы вернуть микроконтраст и сделать мелкий текст читаемым.
+function applySharpening(ctx, w, h, mix) {
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+    const w4 = w * 4;
+    const outData = new Uint8ClampedArray(data.length);
+
+    const weight = mix;
+    const centerWeight = 1 + 4 * weight;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = y * w4 + x * 4;
+            if (data[i + 3] === 0) continue; // Пропускаем прозрачные пиксели (фон)
+
+            // Края копируем 1 к 1, чтобы не выйти за границы массива и не сделать черную рамку
+            if (y === 0 || y === h - 1 || x === 0 || x === w - 1) {
+                outData[i] = data[i]; outData[i+1] = data[i+1];
+                outData[i+2] = data[i+2]; outData[i+3] = data[i+3];
+                continue;
+            }
+
+            for (let c = 0; c < 3; c++) {
+                const val = data[i + c] * centerWeight -
+                    (data[i - w4 + c] + data[i + w4 + c] + data[i - 4 + c] + data[i + 4 + c]) * weight;
+                outData[i + c] = val;
+            }
+            outData[i + 3] = data[i + 3];
+        }
+    }
+    ctx.putImageData(new ImageData(outData, w, h), 0, 0);
+}
+
 // --- СУПЕРСЭМПЛИНГ: Пред-рендеринг для максимальной резкости маленьких акций ---
 function generateOfferCache(offer, targetW, targetH) {
     let item = offer.ref;
     let tW = targetW || item.canvas.width;
     let tH = targetH || item.canvas.height;
     
-    // Рендерим кэш в 2 раза большего размера, чтобы сохранить пиксели при сжатии!
+    // Рендерим кэш в 2 раза большего размера, чтобы сохранить пиксели при сжатии
     let scaleMult = 2;
     let hrW = Math.round(tW * scaleMult);
     let hrH = Math.round(tH * scaleMult);
@@ -670,21 +704,32 @@ function generateOfferCache(offer, targetW, targetH) {
     sCtx.imageSmoothingEnabled = true; 
     sCtx.imageSmoothingQuality = "high";
     
-    // Если картинка огромная, делаем один промежуточный шаг, чтобы избежать лесенок
+    // --- ИСПРАВЛЕНИЕ: Пошаговое уменьшение (Step-down scaling) ---
+    // Чтобы избежать размытия (мыла) от браузерного сжатия, делим размер пополам в цикле.
     let curW = item.canvas.width;
     let curH = item.canvas.height;
     let tmp = item.canvas;
     
-    if (curW > hrW * 2) {
+    while (curW > hrW * 2) {
+        let stepW = Math.floor(curW / 2);
+        let stepH = Math.floor(curH / 2);
         let t1 = document.createElement('canvas');
-        t1.width = Math.round(curW / 2); t1.height = Math.round(curH / 2);
+        t1.width = stepW;
+        t1.height = stepH;
         let t1ctx = t1.getContext('2d');
-        t1ctx.imageSmoothingEnabled = true; t1ctx.imageSmoothingQuality = "high";
-        t1ctx.drawImage(tmp, 0, 0, t1.width, t1.height);
+        t1ctx.imageSmoothingEnabled = true;
+        t1ctx.imageSmoothingQuality = "high";
+        t1ctx.drawImage(tmp, 0, 0, stepW, stepH);
         tmp = t1;
+        curW = stepW;
+        curH = stepH;
     }
     
     sCtx.drawImage(tmp, 0, 0, hrW, hrH);
+
+    // --- ИСПРАВЛЕНИЕ: Восстановление микроконтраста (Sharpen) ---
+    // Убирает остаточное размытие после сжатия, делает текст и графику кристально четкими.
+    applySharpening(sCtx, hrW, hrH, 0.45);
 
     // Добавление обводки
     let baseSw = offer.hasStroke ? window.layerState.globalStrokeWidth : 0;
@@ -708,7 +753,7 @@ function generateOfferCache(offer, targetW, targetH) {
         silCtx.fillStyle = '#ffffff';
         silCtx.fillRect(0, 0, hrW, hrH);
         
-        // 36 шагов для идеальной гладкости
+        // 36 шагов для идеальной гладкости обводки
         const steps = 36; 
         for (let i = 0; i < steps; i++) {
             let angle = (i / steps) * Math.PI * 2;
