@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.2</title>
+<title>Интерфейс v1.0.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.otf') format('opentype'); }
@@ -14,9 +14,9 @@
   @font-face { font-family: 'AmericanCaptain'; src: url('americancaptaincyrillic.ttf') format('truetype'); }
 
   body {
-    background: #090909;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    background: #F2F2F7; /* Заменен фон на системный iOS для всего приложения */
+    color: #000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -26,351 +26,308 @@
     overflow-x: hidden;
   }
   
-  .top-controls {
-    position: absolute;
-    top: 30px;
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .top-controls label {
-    font-size: 14px;
-    color: #aaa;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: bold;
-  }
-
-  .top-controls input[type="number"] {
-    background: #1a1a1a;
-    border: 2px solid #ff007f;
-    color: #fff;
-    padding: 12px 25px;
-    font-size: 24px;
-    font-family: 'Lilita One', sans-serif;
-    border-radius: 12px;
-    text-align: center;
-    width: 250px;
-    outline: none;
-    box-shadow: 0 5px 15px rgba(255,0,127,0.3);
-    transition: all 0.3s;
-  }
-  .top-controls input[type="number"]:focus {
-    box-shadow: 0 5px 25px rgba(255,0,127,0.6);
-    transform: translateY(-2px);
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type=number] {
-    -moz-appearance: textfield;
-  }
-
+  /* Скрываем стандартные инпуты */
   input[type="file"] { display: none; }
 
+  /* ========================================================
+     ОБНОВЛЕННЫЙ ИНТЕРФЕЙС РЕЗУЛЬТАТОВ (iOS СТИЛЬ)
+     ======================================================== */
   #result-box {
     display: none;
     width: 100%;
-    padding: 120px 20px 60px 20px;
+    min-height: 100vh;
+    background: #F2F2F7;
+    padding: 60px 20px 120px 20px;
     box-sizing: border-box;
     z-index: 20;
+    position: absolute;
+    top: 0; left: 0;
   }
 
   #result-layout {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 100%;
-    max-width: 1600px;
-    gap: 30px;
-    align-items: flex-start;
-    justify-content: center;
+    max-width: 500px;
+    gap: 20px;
+    align-items: center;
+    justify-content: flex-start;
     margin: 0 auto;
   }
 
   #cards-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    align-items: center;
-  }
-
-  .card-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #111;
-    padding: 20px;
-    border-radius: 16px;
-    border: 1px solid #333;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    transition: transform 0.3s;
     width: 100%;
-    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .canvas-display-wrapper {
     width: 100%;
     overflow: hidden;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(255,0,127,0.2);
-    background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 20px 20px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    background: repeating-conic-gradient(#e0e0e0 0% 25%, #f0f0f0 0% 50%) 50% / 20px 20px;
   }
   .canvas-display-wrapper canvas {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 12px;
+    border-radius: 20px;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
 
-  canvas {
-    max-width: 100%;
-    max-height: 75vh;
-    border-radius: 12px;
-    background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 20px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(255,0,127,0.2);
-  }
-
-  .btn {
-    padding: 12px 30px;
-    background: #ff007f;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
-    text-align: center;
-  }
-  .btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 0, 127, 0.6);
-  }
-
   .reset {
     position: fixed;
-    top: 30px; right: 20px;
-    background: rgba(255,255,255,0.05);
-    color: #aaa;
-    padding: 10px 15px;
-    border-radius: 8px;
+    top: 20px; right: 20px;
+    background: rgba(0,0,0,0.05);
+    color: #8E8E93;
+    padding: 8px 12px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
     z-index: 40;
     display: none;
     transition: background 0.2s;
   }
-  .reset:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .reset:hover { background: rgba(0,0,0,0.1); color: #000; }
   
   #layer-panel {
-    position: sticky;
-    top: 100px;
-    width: 420px;
-    flex-shrink: 0;
-    background: #061d38;
-    border-radius: 12px;
-    padding: 15px;
+    width: 100%;
     display: none; 
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
     z-index: 50;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
-  #layer-panel::-webkit-scrollbar { width: 6px; }
-  #layer-panel::-webkit-scrollbar-thumb { background: #0a427f; border-radius: 6px; }
-
-  .layer-row {
-    display: flex;
-    align-items: center;
-    background: #032044;
-    padding: 10px 15px;
-    border-radius: 8px;
-    gap: 12px;
-    transition: background 0.2s;
-  }
-  .layer-row:hover { background: #052c5c; }
-  
-  .layer-eye {
-    cursor: pointer;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .layer-eye svg { width: 22px; height: 22px; transition: opacity 0.2s; }
-  .layer-eye.hidden svg { opacity: 0.3; }
-
-  .layer-name {
-    flex-grow: 1;
-    min-width: 90px;
-    font-size: 14px;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .ios-section-header {
+    font-size: 13px;
+    color: #8E8E93;
+    text-transform: uppercase;
+    margin-left: 16px;
+    margin-bottom: -8px;
+    letter-spacing: 0.5px;
   }
 
-  .layer-price-input {
-    width: 65px;
-    background: #0a427f;
-    border: 1px solid #1059a3;
-    color: #fff;
-    border-radius: 4px;
-    padding: 5px;
-    text-align: center;
-    font-size: 14px;
-    outline: none;
-    font-family: 'Lilita One', 'Segoe UI', sans-serif;
-    letter-spacing: 1px;
-  }
-  .layer-price-input:focus { border-color: #3bf83b; }
-
-  .layer-opacity-slider {
-    width: 60px;
-    margin: 0;
-    cursor: pointer;
-    accent-color: #ff007f;
-  }
-
-  .global-stroke-control {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  .stroke-controls {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-  }
-  .stroke-btn {
-    background: #0a427f;
-    border: 1px solid #1059a3;
-    color: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .stroke-btn:hover { background: #1059a3; }
-  .stroke-btn-minus { border-radius: 15px 0 0 15px; padding: 5px 12px; border-right: none; font-size: 16px; font-weight: bold;}
-  .stroke-btn-main { padding: 5px 12px; flex-grow: 1; border-radius: 15px; }
-  .stroke-btn-main.active { background: #0d47a1; border-color: #2196f3; }
-  .stroke-btn-plus { border-radius: 0 15px 15px 0; padding: 5px 12px; border-left: none; font-size: 16px; font-weight: bold;}
-  .stroke-val {
-    background: #0a427f;
-    padding: 5px 15px;
-    color: #fff;
-    font-family: 'Lilita One';
-    border-top: 1px solid #1059a3;
-    border-bottom: 1px solid #1059a3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-
-  .layer-download {
-    cursor: pointer;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s;
-  }
-  .layer-download:hover { color: #ff007f; }
-  .layer-download svg { width: 20px; height: 20px; }
-
-  .layer-wrapper {
+  .ios-layer-group {
+    background: #fff;
+    border-radius: 24px;
+    padding: 0 16px;
     display: flex;
     flex-direction: column;
-    background: #032044;
-    border-radius: 8px;
-    transition: background 0.2s;
   }
-  .layer-wrapper > .layer-row {
-    background: transparent;
-  }
-  .layer-wrapper:hover { background: #052c5c; }
-  
-  .font-toggle-row {
+
+  .ios-layer-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 2px 15px 10px 15px;
+    padding: 14px 0;
+    border-bottom: 0.5px solid #E5E5EA;
+  }
+  .ios-layer-row:last-child { border-bottom: none; }
+
+  .ios-eye {
+    color: #8E8E93;
     cursor: pointer;
-    color: #aaa;
-    font-size: 12px;
-    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    transition: opacity 0.2s;
   }
-  .font-toggle-row:hover { color: #fff; }
-  
-  .layer-expanded-content {
-    padding: 0 15px 15px 15px;
-  }
-  
-  .font-selector-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  
-  .font-btn {
-    background: #061d38;
-    border: 2px solid #1059a3;
-    color: #fff;
-    border-radius: 6px;
-    padding: 8px 4px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 13px;
+  .ios-eye svg { width: 22px; height: 22px; }
+  .ios-eye.hidden { opacity: 0.3; }
+
+  .ios-layer-name {
+    flex-grow: 1;
+    font-size: 17px;
+    color: #000;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: all 0.2s;
+  }
+
+  .ios-download-icon {
+    color: #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+  }
+  .ios-download-icon svg { width: 20px; height: 20px; }
+
+  /* iOS style badge inputs and buttons */
+  .ios-badge-input {
+    width: 60px;
+    background: #90D4FF;
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    padding: 6px 4px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+  }
+  .ios-badge-input.free { background: #34C759; }
+  .ios-badge-input:focus { opacity: 0.8; }
+
+  .ios-badge-btn {
+    background: #90D4FF;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  /* Stepper (for stroke) */
+  .ios-stepper {
+    display: flex;
+    align-items: center;
+    background: #90D4FF;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ios-stepper button {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    width: 32px;
+    height: 28px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .font-btn:hover { border-color: #2196f3; background: #0a427f; }
-  .font-btn.active { border-color: #3bf83b; background: #0a427f; box-shadow: 0 0 10px rgba(59,248,59,0.2); }
-
-  @media(max-width: 1200px) {
-    #result-layout { flex-direction: column; align-items: center; }
-    #layer-panel { position: static; width: 100%; max-width: 600px; max-height: none; }
+  .ios-stepper button:active { background: rgba(0,0,0,0.1); }
+  .ios-stepper span {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
   }
 
+  /* Sliders */
+  .ios-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ios-slider-wrap span {
+    font-size: 13px;
+    color: #8E8E93;
+  }
+  input[type=range].ios-slider {
+    -webkit-appearance: none;
+    width: 80px;
+    background: transparent;
+  }
+  input[type=range].ios-slider::-webkit-slider-runnable-track {
+    width: 100%; height: 4px; cursor: pointer; background: #90D4FF; border-radius: 2px;
+  }
+  input[type=range].ios-slider::-webkit-slider-thumb {
+    height: 16px; width: 16px; border-radius: 50%; background: #fff; cursor: pointer;
+    -webkit-appearance: none; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  /* Font & Style Grids inside iOS group */
+  .ios-sub-section {
+    padding: 10px 0;
+    border-bottom: 0.5px solid #E5E5EA;
+  }
+  .ios-sub-section:last-child { border-bottom: none; }
+  .ios-sub-title {
+    font-size: 13px;
+    color: #8E8E93;
+    margin-bottom: 8px;
+  }
+  
+  .ios-font-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ios-font-pill {
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    color: #000;
+    border: 1px solid #000;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .ios-font-pill.active {
+    background: #90D4FF;
+    color: #fff;
+    border-color: #90D4FF;
+  }
+
+  .ios-style-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .ios-style-btn {
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #F2F2F7;
+    border: 2px solid transparent;
+  }
+  .ios-style-btn.active {
+    border-color: #90D4FF;
+  }
+
+  /* Fixed Bottom Download Button */
+  #ios-btn-download-hd {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00A0FF;
+    color: #fff;
+    border: none;
+    border-radius: 40px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 58px;
+    display: none; /* Shown via JS */
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 40px);
+    max-width: 400px;
+    box-shadow: 0 10px 20px rgba(0, 160, 255, 0.3);
+    z-index: 100;
+    gap: 10px;
+  }
+  #ios-btn-download-hd.show { display: flex; }
+  #ios-btn-download-hd:active { transform: translateX(-50%) scale(0.97); }
+
   /* ========================================================
-     НОВЫЙ ИНТЕРФЕЙС iOS 26 (ДАШБОРД)
+     СТАРЫЙ ИНТЕРФЕЙС iOS 26 (ДАШБОРД И ВИЗАРД)
      ======================================================== */
   #ios-dashboard {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: #F2F2F7; /* Системный фон iOS */
+    background: #F2F2F7;
     z-index: 2000;
     display: flex;
     justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #000;
     overflow-y: auto;
   }
   
@@ -385,157 +342,36 @@
     box-sizing: border-box;
   }
 
-  .ios-card {
-    background: #fff;
-    border-radius: 50px;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-  }
-
-  .ios-card.ios-profile {
-    border-radius: 24px;
-    padding: 16px 20px;
-  }
-
-  .ios-card-group {
-    background: #fff;
-    border-radius: 24px;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ios-avatar {
-    width: 54px; height: 54px;
-    background: #4A90E2;
-    border-radius: 50%;
-    margin-right: 16px;
-    flex-shrink: 0;
-  }
-
-  .ios-profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .ios-id {
-    color: #8E8E93;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .ios-sub {
-    color: #000;
-    font-size: 16px;
-    font-weight: 400;
-  }
-
-  .ios-section-title {
-    color: #8E8E93;
-    font-size: 13px;
-    text-transform: uppercase;
-    margin-top: 28px;
-    margin-left: 14px;
-    margin-bottom: -6px;
-    letter-spacing: 0.5px;
-  }
-
-  .ios-menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
+  .ios-card { background: #fff; border-radius: 50px; padding: 10px 20px; display: flex; align-items: center; }
+  .ios-card.ios-profile { border-radius: 24px; padding: 16px 20px; }
+  .ios-card-group { background: #fff; border-radius: 24px; padding: 0 20px; display: flex; flex-direction: column; }
+  .ios-avatar { width: 54px; height: 54px; background: #4A90E2; border-radius: 50%; margin-right: 16px; flex-shrink: 0; }
+  .ios-profile-info { display: flex; flex-direction: column; gap: 4px; }
+  .ios-id { color: #8E8E93; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+  .ios-sub { color: #000; font-size: 16px; font-weight: 400; }
+  .ios-section-title { color: #8E8E93; font-size: 13px; text-transform: uppercase; margin-top: 28px; margin-left: 14px; margin-bottom: -6px; letter-spacing: 0.5px; }
+  .ios-menu-item { display: flex; align-items: center; padding: 10px 0; cursor: pointer; transition: opacity 0.2s; }
   .ios-menu-item:active { opacity: 0.6; }
+  .ios-card.ios-menu-item { padding: 10px 20px; }
+  .ios-icon-box { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; }
+  .ios-menu-text { font-size: 17px; font-weight: 400; flex-grow: 1; color: #000; }
+  .ios-menu-value { color: #8E8E93; font-size: 17px; margin-right: 12px; }
+  .ios-chevron { display: flex; align-items: center; opacity: 0.5; }
+  .ios-divider { height: 0.5px; background: #E5E5EA; margin-left: 48px; }
 
-  .ios-card.ios-menu-item {
-    padding: 10px 20px;
-  }
+  @keyframes shimmerBg { 0% { background-position: 100% 50%; } 25% { background-position: 0% 50%; } 100% { background-position: 0% 50%; } }
 
-  .ios-icon-box {
-    width: 34px; height: 34px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 14px;
-    flex-shrink: 0;
-  }
-
-  .ios-menu-text {
-    font-size: 17px;
-    font-weight: 400;
-    flex-grow: 1;
-    color: #000;
-  }
-
-  .ios-menu-value {
-    color: #8E8E93;
-    font-size: 17px;
-    margin-right: 12px;
-  }
-
-  .ios-chevron {
-    display: flex;
-    align-items: center;
-    opacity: 0.5;
-  }
-
-  .ios-divider {
-    height: 0.5px;
-    background: #E5E5EA;
-    margin-left: 48px;
-  }
-
-  @keyframes shimmerBg {
-    0% { background-position: 100% 50%; }
-    25% { background-position: 0% 50%; } 
-    100% { background-position: 0% 50%; } 
-  }
-
-  /* Одинаковые стили для всех кнопок действий */
   #ios-btn-create, .ios-btn-next {
     background: linear-gradient(110deg, #3390ec 38%, #8ad0ff 50%, #3390ec 62%);
     background-size: 300% 100%;
-    color: #fff;
-    border: none;
-    border-radius: 40px;
-    font-size: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.1s;
+    color: #fff; border: none; border-radius: 40px; font-size: 20px; font-weight: 600; cursor: pointer; transition: transform 0.1s;
     -webkit-tap-highlight-color: transparent;
-    box-shadow: 
-      inset 0px 1px 0px rgba(255, 255, 255, 0.65),   
-      inset 0px -1px 0px rgba(0, 0, 0, 0.15),        
-      0px 24px 48px rgba(0, 0, 0, 0.15);             
-    height: 58px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: calc(100% - 40px);
-    max-width: 400px;
-    box-sizing: border-box;
+    box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.65), inset 0px -1px 0px rgba(0, 0, 0, 0.15), 0px 24px 48px rgba(0, 0, 0, 0.15);            
+    height: 58px; display: flex; align-items: center; justify-content: center; width: calc(100% - 40px); max-width: 400px; box-sizing: border-box;
   }
+  #ios-btn-create { margin-top: auto; align-self: center; animation: shimmerBg 4s infinite linear; }
+  #ios-btn-create:active, .ios-btn-next:active { transform: scale(0.97); }
 
-  #ios-btn-create {
-    margin-top: auto;
-    align-self: center;
-    animation: shimmerBg 4s infinite linear; /* Переливание только здесь */
-  }
-
-  #ios-btn-create:active, .ios-btn-next:active {
-    transform: scale(0.97);
-  }
-
-  /* ========================================================
-     ДИЗАЙН ШАГОВ (WIZARD) В СТИЛЕ iOS
-     ======================================================== */
   #wizard-overlay {
     position: fixed; 
     top: 0; left: 0; width: 100%; height: 100%;
@@ -546,7 +382,6 @@
     align-items: center; 
     justify-content: flex-start; 
     padding-top: 8vh;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     box-sizing: border-box;
   }
 
@@ -566,234 +401,45 @@
     text-align: center; gap: 20px; width: 100%; max-width: 700px; padding: 0 20px;
     box-sizing: border-box;
   }
-
-  /* Анимация контейнера */
   .wizard-step.active { display: flex; }
 
-  /* Анимация размытия для текстов */
-  @keyframes textBlurIn {
-    0% { filter: blur(10px); opacity: 0; transform: scale(0.98); }
-    100% { filter: blur(0px); opacity: 1; transform: scale(1); }
-  }
-  @keyframes textBlurOut {
-    0% { filter: blur(0px); opacity: 1; transform: scale(1); }
-    100% { filter: blur(10px); opacity: 0; transform: scale(0.98); }
-  }
+  @keyframes textBlurIn { 0% { filter: blur(10px); opacity: 0; transform: scale(0.98); } 100% { filter: blur(0px); opacity: 1; transform: scale(1); } }
+  @keyframes textBlurOut { 0% { filter: blur(0px); opacity: 1; transform: scale(1); } 100% { filter: blur(10px); opacity: 0; transform: scale(0.98); } }
 
-  /* Применяем размытие ТОЛЬКО к подзаголовкам (описанию шага) */
-  .wizard-step.active .ios-wizard-subtitle {
-    animation: textBlurIn 0.5s ease-out forwards;
-  }
-  
-  .wizard-step.fade-out .ios-wizard-subtitle {
-    animation: textBlurOut 0.3s ease-in forwards;
-  }
+  .wizard-step.active .ios-wizard-subtitle { animation: textBlurIn 0.5s ease-out forwards; }
+  .wizard-step.fade-out .ios-wizard-subtitle { animation: textBlurOut 0.3s ease-in forwards; }
 
   .ios-wizard-title { font-size: 32px; font-weight: 700; color: #000; margin-bottom: 10px; text-align: center; }
   .ios-wizard-subtitle { font-size: 15px; color: #8E8E93; text-align: center; line-height: 1.35; margin-bottom: 30px; font-weight: 400; max-width: 300px;}
 
   .ios-color-presets { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
-  .ios-color-btn-wrap {
-    padding: 4px;
-    border-radius: 50%;
-    border: 2.5px solid transparent;
-    cursor: pointer;
-    transition: border-color 0.4s ease-in-out;
-  }
-  
+  .ios-color-btn-wrap { padding: 4px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; transition: border-color 0.4s ease-in-out; }
   .ios-color-btn-wrap.selected[data-color="green"] { border-color: #168625; }
   .ios-color-btn-wrap.selected[data-color="blue"] { border-color: #004d9c; }
   .ios-color-btn-wrap.selected[data-color="orange"] { border-color: #b35900; }
   .ios-color-btn-wrap.selected[data-color="purple"] { border-color: #510087; }
   .ios-color-btn-wrap.selected[data-color="black"] { border-color: #050505; }
-  
-  .ios-color-btn {
-    width: 48px; height: 48px; border-radius: 50%;
-    box-shadow: inset -2px -4px 8px rgba(0,0,0,0.2), inset 2px 2px 8px rgba(255,255,255,0.3); 
-  }
+  .ios-color-btn { width: 48px; height: 48px; border-radius: 50%; box-shadow: inset -2px -4px 8px rgba(0,0,0,0.2), inset 2px 2px 8px rgba(255,255,255,0.3); }
 
   .ios-or-text { color: #8E8E93; font-size: 15px; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
-  
   .ios-upload-link { color: #00A0FF; font-size: 20px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; -webkit-tap-highlight-color: transparent;}
   .ios-upload-link:active { opacity: 0.6; }
   .ios-upload-link svg { fill: none; stroke: currentColor; width: 9px; height: 15px; margin-top: 2px; stroke-width: 2.5px; stroke-linecap: round; stroke-linejoin: round;}
+  .ios-uploaded-count { color: #8E8E93; font-size: 15px; margin-top: 8px; display: none; }
 
-  .ios-uploaded-count {
-    color: #8E8E93;
-    font-size: 15px;
-    margin-top: 8px;
-    display: none;
-  }
+  .ios-btn-next { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: none; }
+  .ios-btn-next.show { display: flex; animation: slideUpFade 0.3s ease-out forwards; }
+  @keyframes slideUpFade { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-  .ios-btn-next {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: none; 
-  }
-  .ios-btn-next.show {
-    display: flex;
-    animation: slideUpFade 0.3s ease-out forwards;
-  }
-  @keyframes slideUpFade {
-    from { opacity: 0; transform: translate(-50%, 20px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-  }
-
-  #wizard-nick-input {
-    background: #fff;
-    border: none;
-    border-radius: 20px;
-    padding: 18px 22px;
-    font-size: 17px;
-    color: #000;
-    width: calc(100% - 64px);
-    max-width: 350px;
-    outline: none;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
+  #wizard-nick-input { background: #fff; border: none; border-radius: 20px; padding: 18px 22px; font-size: 17px; color: #000; width: calc(100% - 64px); max-width: 350px; outline: none; box-sizing: border-box; text-align: left; }
   #wizard-nick-input::placeholder { color: #8E8E93; }
-
-  #wizard-step1 h1, #wizard-step2 h1, #wizard-step3 h1 { color: #000; text-shadow: none; }
-  #wizard-step1 p, #wizard-step2 p, #wizard-step3 p { color: #8E8E93; }
-
-  /* ========================================================
-     НОВЫЙ ИНТЕРФЕЙС ИТОГА (RESULT SCREEN iOS STYLE)
-     ======================================================== */
-  #ios-result-screen {
-    display: none; 
-    width: 100%; 
-    min-height: 100vh; 
-    background: #F2F2F7; 
-    position: absolute; 
-    top: 0; left: 0; 
-    z-index: 1500; 
-    flex-direction: column; 
-    align-items: center; 
-    padding: 0 20px 100px 20px; 
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  
-  #ios-result-canvas-container {
-    width: 100%; 
-    max-width: 440px; 
-    margin-top: 50px; 
-    border-radius: 20px; 
-    overflow: hidden; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  }
-  
-  #ios-result-canvas-container canvas {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .ios-edit-title {
-    color: #8E8E93;
-    font-size: 12px;
-    text-transform: uppercase;
-    margin-left: 14px;
-    margin-bottom: 8px;
-    margin-top: 30px;
-    letter-spacing: 0.5px;
-    width: 100%;
-    max-width: 440px;
-    text-align: left;
-  }
-  
-  .ios-edit-card {
-    background: #ffffff;
-    border-radius: 24px;
-    padding: 15px 20px;
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    max-width: 440px;
-    box-sizing: border-box;
-  }
-  
-  .ios-edit-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  
-  .ios-edit-divider {
-    height: 1px;
-    background: #E5E5EA;
-    width: 100%;
-  }
-  
-  .ios-eye { cursor: pointer; color: #8E8E93; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
-  .ios-eye.hidden { opacity: 0.3; }
-  .ios-layer-name { flex-grow: 1; color: #000; font-size: 16px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ios-sub-label { color: #8E8E93; font-size: 13px; }
-  .ios-pos-btn { background: #71D5FF; color: #fff; border: none; border-radius: 12px; padding: 4px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;}
-  .ios-pos-btn:active { opacity: 0.7; }
-  .ios-download { cursor: pointer; color: #000; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
-  
-  .ios-stroke-ctrl { display: flex; align-items: center; background: #00A0FF; border-radius: 12px; overflow: hidden; color: #fff; }
-  .ios-stroke-btn { background: transparent; border: none; color: #fff; padding: 4px 12px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-  .ios-stroke-btn:active { background: rgba(255,255,255,0.2); }
-  .ios-stroke-val { background: #71D5FF; padding: 4px 12px; font-size: 14px; font-weight: 500; }
-  
-  .ios-price-input { background: #A1D8FF; border: none; color: #fff; border-radius: 12px; padding: 4px 12px; width: 50px; text-align: center; font-size: 14px; font-weight: bold; outline: none; }
-  .ios-price-input:focus { box-shadow: 0 0 0 2px #00A0FF; }
-  
-  .ios-slider { -webkit-appearance: none; width: 80px; height: 4px; background: #E5E5EA; border-radius: 2px; outline: none; }
-  .ios-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #00A0FF; cursor: pointer; }
-
-  .ios-font-section-title { color: #8E8E93; font-size: 12px; margin-bottom: -5px; }
-  .ios-font-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .ios-font-item { color: #000; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; padding: 6px 4px; border: 2px solid transparent; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s; }
-  .ios-font-item.active { border-color: #00A0FF; }
-  
-  .ios-style-item { height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 8px; background-size: contain; background-position: center; background-repeat: no-repeat; transition: all 0.2s; }
-  .ios-style-item.active { border-color: #00A0FF; }
-  
-  .ios-fixed-download {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: 400px;
-    background: #00A0FF;
-    color: #fff;
-    border: none;
-    border-radius: 30px;
-    padding: 16px;
-    font-size: 20px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 10px 20px rgba(0, 160, 255, 0.3);
-    z-index: 1600;
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  .ios-fixed-download:active { transform: translateX(-50%) scale(0.97); }
 
 </style>
 </head>
 <body>
 
-<!-- ========================================================
-     НОВЫЙ ИНТЕРФЕЙС iOS 26 (ДАШБОРД)
-     ======================================================== -->
 <div id="ios-dashboard">
   <div class="ios-container">
-    
     <div class="ios-card ios-profile">
       <div class="ios-avatar"></div>
       <div class="ios-profile-info">
@@ -801,22 +447,15 @@
         <div class="ios-sub">Подписка истекает: 26.02.2026</div>
       </div>
     </div>
-
     <div class="ios-section-title">ПУНКТ УПРАВЛЕНИЯ</div>
-
     <div class="ios-card ios-menu-item">
       <div class="ios-icon-box" style="background: #FF3B30;">
          <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="20" height="20" viewBox="0 0 24 24"><path d="M2.53 19.65l1.34.56v-9.03l-2.43 5.86c-.41 1.02.08 2.19 1.09 2.61zm19.5-3.7L17.07 3.98c-.31-.75-1.04-1.21-1.81-1.23-.26 0-.53.04-.79.15L7.1 5.95c-.75.31-1.21 1.03-1.23 1.8-.01.27.04.54.15.8l4.96 11.97c.31.76 1.05 1.22 1.83 1.23.26 0 .52-.05.77-.15l7.36-3.05c1.02-.42 1.51-1.59 1.09-2.6zM7.88 8.75c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-2 11c0 1.1.9 2 2 2h1.45l-3.45-8.34v6.34z"/></svg>
       </div>
       <div class="ios-menu-text">Стиль фона</div>
       <div class="ios-menu-value">6</div>
-      <div class="ios-chevron">
-        <svg viewBox="0 0 8 14" width="8" height="14">
-          <path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="ios-chevron"><svg viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
-
     <div class="ios-card ios-menu-item" style="margin-top: 8px;">
       <div class="ios-icon-box" style="background: #007AFF;">
          <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
@@ -829,13 +468,8 @@
       </div>
       <div class="ios-menu-text">Сохранённые работы</div>
       <div class="ios-menu-value">6</div>
-      <div class="ios-chevron">
-        <svg viewBox="0 0 8 14" width="8" height="14">
-          <path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="ios-chevron"><svg viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
-
     <div class="ios-card-group" style="margin-top: 8px;">
       <div class="ios-menu-item">
         <div class="ios-icon-box" style="background: #FF9500;">
@@ -846,35 +480,23 @@
            </svg>
         </div>
         <div class="ios-menu-text">Настройки</div>
-        <div class="ios-chevron">
-          <svg viewBox="0 0 8 14" width="8" height="14">
-            <path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <div class="ios-chevron"><svg viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
-      
       <div class="ios-divider"></div>
-      
       <div class="ios-menu-item">
         <div class="ios-icon-box" style="background: #34C759;">
            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
              <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="white" stroke="none">
-               <path d="M2500 5104 c-42 -18 -76 -49 -98 -89 -14 -24 -18 -70 -22 -244 l-5 -215 -120 -17 c-328 -47 -581 -161 -782 -352 -213 -203 -315 -441 -314 -737 1 -285 80 -481 268 -661 83 -81 211 -165 341 -226 82 -39 384 -144 557 -194 l50 -15 3 -643 2 -644 -58 7 c-231 26 -546 165 -766 339 -102 80 -170 99 -258 73 -115 -33 -198 -143 -198 -264 0 -102 26 -148 137 -239 197 -162 477 -305 723 -368 93 -24 277 -55 330 -55 96 -1 90 14 90 -210 0 -187 1 -199 23 -241 61 -116 214 -143 313 -56 65 56 68 70 72 299 l4 207 57 6 c543 57 925 302 1086 697 94 229 113 551 45 775 -116 382 -428 620 -1054 802 l-131 39 -3 570 -2 570 67 -15 c178 -39 367 -120 514 -219 126 -84 153 -96 220 -95 150 0 271 121 271 270 0 114 -46 173 -231 296 -237 157 -507 254 -783 281 l-68 6 0 215 c0 190 -2 218 -19 251 -49 96 -164 138 -261 96z m-120 -1589 c0 -439 -2 -525 -14 -525 -31 0 -257 83 -344 126 -120 60 -209 144 -243 230 -18 48 -23 77 -22 154 1 148 49 259 158 358 102 93 293 170 448 181 16 1 17 -30 17 -524z m572 -1336 c322 -113 461 -258 475 -491 15 -240 -114 -444 -347 -551 -63 -28 -233 -77 -271 -77 -18 0 -19 20 -19 585 l0 585 28 -6 c15 -4 75 -24 134 -45z"/>
+               <path d="M2500 5104 c-42 -18 -76 -49 -98 -89 -14 -24 -18 -70 -22 -244 l-5 -215 -120 -17 c-328 -47 -581 -161 -782 -352 -213 -203 -315 -441 -314 -737 1 -285 80 -481 268 -661 83 -81 211 -165 341 -226 82 -39 384 -144 557 -194 l50 -15 3 -643 2 -644 -58 7 c-231 26 -546 165 -766 339 -102 80 -170 99 -258 73 -115 -33 -198 -143 -198 -264 0 -102 26 -148 137 -239 197 -162 477 -305 723 -368 93 -24 277 -55 330 -55 96 -1 90 14 90 -210 0 -187 1 -199 23 -241 61 -116 214 -143 313 -56 65 56 68 70 72 299 l4 207 57 6 c543 57 925 302 1086 697 94 229 113 551 45 775 -116 382 -428 620 -1054 802 l-131 39 -3 570 -2 570 67 -15 c178 -39 367 -120 514 -219 126 -84 153 -96 220 -95 150 0 271 121 271 270 0 114 -46 173 -231 296 -237 157 -507 254 -783 281 l-68 6 0 215 c0 190 -2 218 -19 251 -49 96 -164 138 -261 96z m-120 -1589 c0 -439 -2 -525 -14 -525 -31 0 -257 83 -344 126 -120 60 -209 144 -243 230 -18 48 -23 -77 -22 154 1 148 49 259 158 358 102 93 293 170 448 181 16 1 17 -30 17 -524z m572 -1336 c322 -113 461 -258 475 -491 15 -240 -114 -444 -347 -551 -63 -28 -233 -77 -271 -77 -18 0 -19 20 -19 585 l0 585 28 -6 c15 -4 75 -24 134 -45z"/>
              </g>
            </svg>
         </div>
         <div class="ios-menu-text">Подписка</div>
         <div class="ios-menu-value">активна</div>
-        <div class="ios-chevron">
-          <svg viewBox="0 0 8 14" width="8" height="14">
-            <path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <div class="ios-chevron"><svg viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="#C7C7CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
     </div>
-
     <div style="flex-grow: 1; min-height: 40px;"></div> 
-
     <button id="ios-btn-create">Создать</button>
   </div>
 </div>
@@ -889,7 +511,6 @@
 </div>
 
 <div id="wizard-overlay" style="display: none;">
-  
   <div class="ios-progress" id="shared-progress">
     <div class="step active" id="prog-step1">1</div>
     <div class="line" id="prog-line1"></div>
@@ -897,12 +518,10 @@
     <div class="line" id="prog-line2"></div>
     <div class="step small" id="prog-step3">3</div>
   </div>
-
   <!-- ШАГ 1 -->
   <div id="wizard-step1" class="wizard-step active">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Фон. Выбери один из готовых цветов<br>или загрузи свой готовый фон.</div>
-    
     <div class="ios-color-presets" id="wizard-color-presets">
        <div class="ios-color-btn-wrap" data-color="green"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #5ee568, #168625)"></div></div>
        <div class="ios-color-btn-wrap" data-color="blue"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #46b3ff, #004d9c)"></div></div>
@@ -910,66 +529,51 @@
        <div class="ios-color-btn-wrap" data-color="purple"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #c861ff, #510087)"></div></div>
        <div class="ios-color-btn-wrap" data-color="black"><div class="ios-color-btn" style="background: radial-gradient(circle at 35% 35%, #666, #050505)"></div></div>
     </div>
-    
     <div class="ios-or-text">ИЛИ</div>
-    
     <div class="ios-upload-link" id="wizard-upload-bg-btn">
        <span id="wizard-upload-text">Загрузить фон</span>
        <svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>
     </div>
     <input type="file" id="wizard-bg-input" accept="image/*" style="display:none;">
-
     <button id="wizard-next-btn1" class="ios-btn-next">Далее</button>
   </div>
-  
   <!-- ШАГ 2 -->
   <div id="wizard-step2" class="wizard-step">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Ник. Напиши свой ник, который<br>будет располагаться на твоей работе.</div>
-    
     <input type="text" id="wizard-nick-input" placeholder="Введи свой ник..." maxlength="16">
-    
     <button id="wizard-next-btn2" class="ios-btn-next">Далее</button>
   </div>
-
   <!-- ШАГ 3 -->
   <div id="wizard-step3" class="wizard-step">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Скриншот. Загрузи скриншоты из игры<br>что бы система смогла их вырезать<br>и вставить на твой фон.</div>
-    
     <div class="ios-upload-link" id="wizard-upload-screens-btn" style="margin-top: 15px;">
        <span>Загрузить скриншот</span>
        <svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>
     </div>
     <div id="wizard-uploaded-count" class="ios-uploaded-count">Загружено: 0</div>
-    
     <input type="file" id="file" accept="image/*" multiple style="display:none;">
-    
     <button id="wizard-next-btn3" class="ios-btn-next">Далее</button>
   </div>
 </div>
 
-<!-- Оставлен старый интерфейс, скрытый через JS, чтобы не удалять логику -->
-<div id="result-box" style="display: none;">
+<!-- ========================================================
+     НОВЫЙ БЛОК РЕЗУЛЬТАТА И СЛОЕВ
+     ======================================================== -->
+<div id="result-box">
+  <div class="reset" id="resetBtn">Меню</div>
   <div id="result-layout">
     <div id="cards-container"></div>
     <div id="layer-panel"></div>
   </div>
 </div>
 
-<!-- ========================================================
-     НОВЫЙ ИНТЕРФЕЙС iOS 26 (РЕЗУЛЬТАТ)
-     ======================================================== -->
-<div id="ios-result-screen">
-    <div id="ios-result-canvas-container"></div>
-    <div id="ios-result-layers"></div>
-    <button id="ios-download-all" class="ios-fixed-download">
-        Скачать 
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-    </button>
-</div>
-
-<div class="reset" id="resetBtn">✕ Вернуться в меню</div>
+<!-- Фиксированная кнопка скачивания HD -->
+<button id="ios-btn-download-hd">
+  Скачать 
+  <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+</button>
 
 <script>
 const fileInput = document.getElementById("file");
@@ -977,6 +581,7 @@ const resultBox = document.getElementById("result-box");
 const cardsContainer = document.getElementById("cards-container");
 const resetBtn = document.getElementById("resetBtn");
 const layerPanel = document.getElementById("layer-panel");
+const btnDownloadHD = document.getElementById("ios-btn-download-hd");
 
 let rawBgImage = null; 
 let globalAssets = { luchImg: null, starImg: null, pointsImg: null };
@@ -1032,8 +637,6 @@ window.layerState = {
     textPosition: "top", 
     textFont: 'Font16103',
     textStyleIndex: 0, 
-    textExpanded: false,
-    textStyleExpanded: false, 
     globalStrokeWidth: 2, 
     offers: [],
     bgVisible: true,
@@ -1044,18 +647,17 @@ window.layerState = {
     watermarksVisible: true,
     watermarksOpacity: 0.8,
     watermarksFont: 'Font16103',
-    watermarksExpanded: false,
     pointsVisible: true,
     isGeneratedBg: false
 };
 
 const FONT_OPTIONS = [
-    { family: 'Font16103' },
-    { family: 'LilitaOneRus' },
-    { family: 'SupercellMagic' },
-    { family: 'PusiaBold' },
-    { family: 'BebasNeue' },
-    { family: 'AmericanCaptain' }
+    { family: 'Font16103', label: 'ARTZA DONATE' },
+    { family: 'LilitaOneRus', label: 'ARTZA DONATE' },
+    { family: 'SupercellMagic', label: 'ARTZA DONATE' },
+    { family: 'PusiaBold', label: 'ARTZA DONATE' },
+    { family: 'BebasNeue', label: 'ARTZA DONATE' },
+    { family: 'AmericanCaptain', label: 'ARTZA DONATE' }
 ];
 
 const TEXT_STYLES = [
@@ -1145,8 +747,8 @@ let cachedTextCanvas = null;
 let animReq = null;
 let animText = { scale: 1, alpha: 1, targetScale: 1, targetAlpha: 1 };
 
-const eyeIconOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-const downloadSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+const eyeIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+const downloadIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
 
 function updateDropzoneUI() {
   if (stagedFiles.length > 0) {
@@ -1167,17 +769,12 @@ function handleFilesAdded(files) {
 
 fileInput.onchange = (e) => { if (e.target.files.length > 0) handleFilesAdded(e.target.files); };
 
-resetBtn.onclick = () => {
-  location.reload();
-};
+resetBtn.onclick = () => { location.reload(); };
 
 function processImages(files) {
-  // Показываем новый экран результатов iOS
-  document.getElementById('ios-result-screen').style.display = 'flex';
-  // Кнопка резета
+  resultBox.style.display = 'block';
   resetBtn.style.display = 'block';
-  resetBtn.style.top = '10px'; resetBtn.style.right = '10px';
-  
+  cardsContainer.innerHTML = '';
   allGeneratedCards = [];
   window.layerState.offers = [];
   filesProcessed = 0;
@@ -1190,195 +787,203 @@ function processImages(files) {
   }
 }
 
-// Переписанная функция для рендера в стиле iOS
+/* --------------------------------------------------------------------------
+   Новая iOS функция рендера панелей 
+   -------------------------------------------------------------------------- */
 function renderLayerPanel() {
-    const layersContainer = document.getElementById('ios-result-layers');
-    layersContainer.innerHTML = '';
-    
-    // Title
-    let titleEl = document.createElement('div');
-    titleEl.className = 'ios-edit-title';
-    titleEl.innerText = 'СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ';
-    layersContainer.appendChild(titleEl);
+    layerPanel.innerHTML = '';
 
-    // --- CARD 1: MAIN TEXT ---
-    let textCard = document.createElement('div');
-    textCard.className = 'ios-edit-card';
+    let secTitle = document.createElement('div');
+    secTitle.className = 'ios-section-header';
+    secTitle.innerText = 'СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ';
+    layerPanel.appendChild(secTitle);
+
+    // 1. Группа текста и стилей
+    let textGroup = document.createElement('div');
+    textGroup.className = 'ios-layer-group';
     
-    let textRow = document.createElement('div');
-    textRow.className = 'ios-edit-row';
     let isTop = window.layerState.textPosition !== 'bottom';
-    
-    // Форматируем текст, чтобы не ломать верстку длинным ником
-    let shortName = window.layerState.textValue;
-    if (shortName.length > 9) shortName = shortName.substring(0, 7) + '...';
-    
+    let textNameDisp = window.layerState.textValue;
+    if (textNameDisp.length > 10) textNameDisp = textNameDisp.substring(0,8) + '...';
+
+    // Ряд основного текста
+    let textRow = document.createElement('div');
+    textRow.className = 'ios-layer-row';
     textRow.innerHTML = `
-        <div class="ios-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()">${eyeIconOpen}</div>
-        <div class="ios-layer-name">${shortName}</div>
-        <div class="ios-sub-label">расположение</div>
-        <button class="ios-pos-btn" onclick="toggleTextPosition()">${isTop ? 'ВНИЗ' : 'ВВЕРХ'}</button>
-        <div class="ios-download" onclick="downloadTextLayer()">${downloadSvg}</div>
+        <div class="ios-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()">${eyeIcon}</div>
+        <div class="ios-layer-name">${textNameDisp}</div>
+        <button class="ios-badge-btn" onclick="toggleTextPosition()" style="margin-right:8px; width: 65px; padding: 6px 0;">
+            ${isTop ? 'ВНИЗ' : 'ВВЕРХ'}
+        </button>
+        <div class="ios-download-icon" onclick="downloadTextLayer()">${downloadIcon}</div>
     `;
-    textCard.appendChild(textRow);
-    textCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
-    
-    // Fonts
-    textCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить шрифт</div>`);
+    textGroup.appendChild(textRow);
+
+    // Подсекция шрифтов
+    let fontSec = document.createElement('div');
+    fontSec.className = 'ios-sub-section';
+    fontSec.innerHTML = `<div class="ios-sub-title">Изменить шрифт</div>`;
     let fontGrid = document.createElement('div');
     fontGrid.className = 'ios-font-grid';
     FONT_OPTIONS.forEach(f => {
-        let fBtn = document.createElement('div');
-        fBtn.className = 'ios-font-item' + (window.layerState.textFont === f.family ? ' active' : '');
-        fBtn.style.fontFamily = `'${f.family}', sans-serif`;
-        fBtn.innerText = shortName;
-        fBtn.onclick = async (e) => {
-            e.stopPropagation();
+        let btn = document.createElement('div');
+        btn.className = 'ios-font-pill' + (window.layerState.textFont === f.family ? ' active' : '');
+        btn.style.fontFamily = `'${f.family}', sans-serif`;
+        btn.innerText = f.label;
+        btn.onclick = async () => {
             window.layerState.textFont = f.family;
             renderLayerPanel();
             await document.fonts.load(`16px '${f.family}'`);
             window.updateCachedTextCanvas();
             startAnimation();
         };
-        fontGrid.appendChild(fBtn);
+        fontGrid.appendChild(btn);
     });
-    textCard.appendChild(fontGrid);
-    
-    textCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
-    
-    // Styles
-    textCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить стиль</div>`);
+    fontSec.appendChild(fontGrid);
+    textGroup.appendChild(fontSec);
+
+    // Подсекция стилей
+    let styleSec = document.createElement('div');
+    styleSec.className = 'ios-sub-section';
+    styleSec.innerHTML = `<div class="ios-sub-title">Изменить стиль</div>`;
     let styleGrid = document.createElement('div');
-    styleGrid.className = 'ios-font-grid';
-    styleGrid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    styleGrid.className = 'ios-style-grid';
     TEXT_STYLES.forEach((st, sIdx) => {
-        let sBtn = document.createElement('div');
-        sBtn.className = 'ios-style-item' + (window.layerState.textStyleIndex === sIdx ? ' active' : '');
+        let btn = document.createElement('div');
+        btn.className = 'ios-style-btn' + (window.layerState.textStyleIndex === sIdx ? ' active' : '');
         let previewDataUrl = createStylePreviewURL(st, window.layerState.textFont);
-        sBtn.style.backgroundImage = `url(${previewDataUrl})`;
-        sBtn.onclick = (e) => {
-            e.stopPropagation();
+        btn.style.backgroundImage = `url(${previewDataUrl})`;
+        btn.onclick = () => {
             window.layerState.textStyleIndex = sIdx;
             renderLayerPanel();
             window.updateCachedTextCanvas();
             startAnimation();
         };
-        styleGrid.appendChild(sBtn);
+        styleGrid.appendChild(btn);
     });
-    textCard.appendChild(styleGrid);
-    layersContainer.appendChild(textCard);
+    styleSec.appendChild(styleGrid);
+    textGroup.appendChild(styleSec);
 
-    // --- CARD 2: OFFERS & STROKE ---
-    if (window.layerState.offers.length > 0) {
-        let offersCard = document.createElement('div');
-        offersCard.className = 'ios-edit-card';
-        
-        let strokeRow = document.createElement('div');
-        strokeRow.className = 'ios-edit-row';
-        strokeRow.innerHTML = `
-            <div class="ios-layer-name">Обводка у акций</div>
-            <div class="ios-sub-label">размер</div>
-            <div class="ios-stroke-ctrl">
-               <button class="ios-stroke-btn" onclick="changeGlobalStroke(-1)">–</button>
-               <div class="ios-stroke-val" id="global-stroke-val">${window.layerState.globalStrokeWidth}</div>
-               <button class="ios-stroke-btn" onclick="changeGlobalStroke(1)">+</button>
-            </div>
-        `;
-        offersCard.appendChild(strokeRow);
-        
-        window.layerState.offers.forEach((offer, idx) => {
-            offersCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
-            
-            let isFree = offer.price.trim().toUpperCase() === 'FREE';
-            let inputColorStyle = isFree ? 'color: #3bf83b;' : '';
-            
-            let row = document.createElement('div');
-            row.className = 'ios-edit-row';
-            row.innerHTML = `
-                <div class="ios-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})">${eyeIconOpen}</div>
-                <div class="ios-layer-name">Акция ${idx + 1}</div>
-                <div class="ios-sub-label">цена</div>
-                <input type="text" class="ios-price-input" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
-                       style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)">
-                <div class="ios-download" onclick="downloadOfferLayer(${idx})">${downloadSvg}</div>
-            `;
-            offersCard.appendChild(row);
-        });
-        
-        layersContainer.appendChild(offersCard);
-    }
+    layerPanel.appendChild(textGroup);
 
-    // --- CARD 3: COSMETICS ---
-    let cosCard = document.createElement('div');
-    cosCard.className = 'ios-edit-card';
-
-    // Luch
-    cosCard.insertAdjacentHTML('beforeend', `
-        <div class="ios-edit-row">
-            <div class="ios-eye ${window.layerState.luchVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('luch')">${eyeIconOpen}</div>
-            <div class="ios-layer-name">Лучи</div>
-            <div class="ios-sub-label">прозрачность</div>
-            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.luchOpacity}" oninput="changeOpacity('luch', this.value)">
-            <div class="ios-download" onclick="downloadCosmeticLayer('luch')">${downloadSvg}</div>
-        </div>
-        <div class="ios-edit-divider"></div>
-    `);
-
-    // Watermarks
-    cosCard.insertAdjacentHTML('beforeend', `
-        <div class="ios-edit-row">
-            <div class="ios-eye ${window.layerState.watermarksVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('watermarks')">${eyeIconOpen}</div>
-            <div class="ios-layer-name">Текст min</div>
-            <div class="ios-sub-label">прозрачность</div>
-            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)">
-            <div class="ios-download" onclick="downloadCosmeticLayer('watermarks')">${downloadSvg}</div>
-        </div>
-        <div class="ios-edit-divider"></div>
-    `);
+    // 2. Группа акций и обводки
+    let offersGroup = document.createElement('div');
+    offersGroup.className = 'ios-layer-group';
     
-    // Watermark Font Setup
-    cosCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить шрифт</div>`);
+    // Обводка общая
+    let strokeRow = document.createElement('div');
+    strokeRow.className = 'ios-layer-row';
+    strokeRow.innerHTML = `
+        <div class="ios-layer-name">Обводка у акций</div>
+        <span style="font-size: 13px; color: #8E8E93; margin-right: 8px;">размер</span>
+        <div class="ios-stepper">
+            <button onclick="changeGlobalStroke(-1)">-</button>
+            <span id="global-stroke-val">${window.layerState.globalStrokeWidth}</span>
+            <button onclick="changeGlobalStroke(1)">+</button>
+        </div>
+    `;
+    offersGroup.appendChild(strokeRow);
+
+    // Сами акции
+    window.layerState.offers.forEach((offer, idx) => {
+        let isFree = offer.price.trim().toUpperCase() === 'FREE';
+        let badgeClass = isFree ? 'ios-badge-input free' : 'ios-badge-input';
+        
+        let row = document.createElement('div');
+        row.className = 'ios-layer-row';
+        row.innerHTML = `
+            <div class="ios-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})">${eyeIcon}</div>
+            <div class="ios-layer-name">Акция ${idx + 1}</div>
+            <span style="font-size: 13px; color: #8E8E93; margin-right: 8px;">цена</span>
+            <input type="text" class="${badgeClass}" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
+                   oninput="updateOfferPriceFromLayer(${idx}, this.value)">
+            <div class="ios-download-icon" onclick="downloadOfferLayer(${idx})">${downloadIcon}</div>
+        `;
+        offersGroup.appendChild(row);
+    });
+    layerPanel.appendChild(offersGroup);
+
+    // 3. Группа косметики
+    let cosGroup = document.createElement('div');
+    cosGroup.className = 'ios-layer-group';
+
+    // Лучи
+    let luchRow = document.createElement('div');
+    luchRow.className = 'ios-layer-row';
+    luchRow.innerHTML = `
+        <div class="ios-eye ${window.layerState.luchVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('luch')">${eyeIcon}</div>
+        <div class="ios-layer-name">Лучи</div>
+        <div class="ios-slider-wrap">
+           <span>прозрачность</span>
+           <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.luchOpacity}" oninput="changeOpacity('luch', this.value)">
+        </div>
+        <div class="ios-download-icon" onclick="downloadCosmeticLayer('luch')">${downloadIcon}</div>
+    `;
+    cosGroup.appendChild(luchRow);
+
+    // Текст min (Watermarks)
+    let wmRow = document.createElement('div');
+    wmRow.className = 'ios-layer-row';
+    wmRow.innerHTML = `
+        <div class="ios-eye ${window.layerState.watermarksVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('watermarks')">${eyeIcon}</div>
+        <div class="ios-layer-name">Текст min</div>
+        <div class="ios-slider-wrap">
+           <span>прозрачность</span>
+           <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)">
+        </div>
+        <div class="ios-download-icon" onclick="downloadCosmeticLayer('watermarks')">${downloadIcon}</div>
+    `;
+    cosGroup.appendChild(wmRow);
+
+    // Шрифты для Текст min
+    let wmFontSec = document.createElement('div');
+    wmFontSec.className = 'ios-sub-section';
+    wmFontSec.innerHTML = `<div class="ios-sub-title">Изменить шрифт</div>`;
     let wmFontGrid = document.createElement('div');
     wmFontGrid.className = 'ios-font-grid';
     FONT_OPTIONS.forEach(f => {
-        let fBtn = document.createElement('div');
-        fBtn.className = 'ios-font-item' + (window.layerState.watermarksFont === f.family ? ' active' : '');
-        fBtn.style.fontFamily = `'${f.family}', sans-serif`;
-        fBtn.innerText = shortName;
-        fBtn.onclick = async (e) => {
-            e.stopPropagation();
+        let btn = document.createElement('div');
+        btn.className = 'ios-font-pill' + (window.layerState.watermarksFont === f.family ? ' active' : '');
+        btn.style.fontFamily = `'${f.family}', sans-serif`;
+        btn.innerText = f.label;
+        btn.onclick = async () => {
             window.layerState.watermarksFont = f.family;
             renderLayerPanel();
             await document.fonts.load(`16px '${f.family}'`);
             startAnimation();
         };
-        wmFontGrid.appendChild(fBtn);
+        wmFontGrid.appendChild(btn);
     });
-    cosCard.appendChild(wmFontGrid);
-    cosCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
+    wmFontSec.appendChild(wmFontGrid);
+    cosGroup.appendChild(wmFontSec);
 
-    // Stars
-    cosCard.insertAdjacentHTML('beforeend', `
-        <div class="ios-edit-row">
-            <div class="ios-eye ${window.layerState.starsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('stars')">${eyeIconOpen}</div>
-            <div class="ios-layer-name">Звёзды</div>
-            <div class="ios-sub-label">прозрачность</div>
-            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.starsOpacity}" oninput="changeOpacity('stars', this.value)">
-            <div class="ios-download" onclick="downloadCosmeticLayer('stars')">${downloadSvg}</div>
+    // Звезды
+    let starsRow = document.createElement('div');
+    starsRow.className = 'ios-layer-row';
+    starsRow.innerHTML = `
+        <div class="ios-eye ${window.layerState.starsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('stars')">${eyeIcon}</div>
+        <div class="ios-layer-name">Звёзды</div>
+        <div class="ios-slider-wrap">
+           <span>прозрачность</span>
+           <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.starsOpacity}" oninput="changeOpacity('stars', this.value)">
         </div>
-    `);
+        <div class="ios-download-icon" onclick="downloadCosmeticLayer('stars')">${downloadIcon}</div>
+    `;
+    cosGroup.appendChild(starsRow);
 
-    // Background
-    cosCard.insertAdjacentHTML('beforeend', `
-        <div class="ios-edit-divider"></div>
-        <div class="ios-edit-row">
-            <div class="ios-eye ${window.layerState.bgVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('bg')">${eyeIconOpen}</div>
-            <div class="ios-layer-name">Фон</div>
-            <div class="ios-download" onclick="downloadCosmeticLayer('bg')">${downloadSvg}</div>
-        </div>
-    `);
+    // Фон
+    let bgRow = document.createElement('div');
+    bgRow.className = 'ios-layer-row';
+    bgRow.innerHTML = `
+        <div class="ios-eye ${window.layerState.bgVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('bg')">${eyeIcon}</div>
+        <div class="ios-layer-name">Фон</div>
+        <div class="ios-download-icon" onclick="downloadCosmeticLayer('bg')">${downloadIcon}</div>
+    `;
+    cosGroup.appendChild(bgRow);
 
-    layersContainer.appendChild(cosCard);
+    layerPanel.appendChild(cosGroup);
+
+    layerPanel.style.display = 'flex';
 }
 
 window.changeGlobalStroke = (delta) => {
@@ -1413,14 +1018,6 @@ window.toggleOffer = (idx) => {
     calculateLayoutTarget(); 
 };
 
-window.toggleOfferStroke = (idx) => {
-    let offer = window.layerState.offers[idx];
-    offer.hasStroke = !offer.hasStroke;
-    generateOfferCache(offer, offer.target.w, offer.target.h);
-    renderLayerPanel();
-    startAnimation(); 
-};
-
 window.updateOfferPriceFromLayer = (idx, val) => {
     if (/^\d+$/.test(val) && parseInt(val) > 99999) {
         val = "99999";
@@ -1432,7 +1029,13 @@ window.updateOfferPriceFromLayer = (idx, val) => {
     offer.price = val;
     
     let layerInput = document.getElementById(`layer-price-${idx}`);
-    if(layerInput) layerInput.style.color = (val.trim().toUpperCase() === 'FREE') ? '#3bf83b' : '#fff';
+    if(layerInput) {
+        if (val.trim().toUpperCase() === 'FREE') {
+            layerInput.classList.add('free');
+        } else {
+            layerInput.classList.remove('free');
+        }
+    }
     
     let cx = offer.ref.canvas.getContext('2d');
     cx.putImageData(offer.ref.info.blankedImgData, 0, 0);
@@ -2044,6 +1647,9 @@ function checkBatchCompletion() {
     setupPersistentCanvas();
     renderLayerPanel();
     calculateLayoutTarget();
+    
+    // Показываем плавающую кнопку скачивания HD
+    btnDownloadHD.classList.add('show');
   }
 }
 
@@ -2052,16 +1658,17 @@ function setupPersistentCanvas() {
         persistentCanvas = document.createElement('canvas');
         persistentCtx = persistentCanvas.getContext('2d');
         
-        let container = document.getElementById('ios-result-canvas-container');
-        container.innerHTML = '';
-        container.appendChild(persistentCanvas);
+        let canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvas-display-wrapper';
+        canvasWrapper.appendChild(persistentCanvas);
         
-        let btnHQ = document.getElementById('ios-download-all');
-        btnHQ.onclick = (e) => {
+        cardsContainer.appendChild(canvasWrapper);
+
+        // Навешиваем событие на фиксированную кнопку скачивания
+        btnDownloadHD.onclick = (e) => {
             e.preventDefault();
-            let origHTML = btnHQ.innerHTML;
-            btnHQ.innerHTML = '⏳ Подготовка...';
-            btnHQ.style.pointerEvents = 'none';
+            btnDownloadHD.innerHTML = 'Подготовка...';
+            btnDownloadHD.style.pointerEvents = 'none';
             setTimeout(() => {
                 try {
                     const link = document.createElement('a');
@@ -2071,8 +1678,8 @@ function setupPersistentCanvas() {
                 } catch(err) {
                     alert('Ошибка скачивания: ' + err.message);
                 } finally {
-                    btnHQ.innerHTML = origHTML;
-                    btnHQ.style.pointerEvents = '';
+                    btnDownloadHD.innerHTML = 'Скачать <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
+                    btnDownloadHD.style.pointerEvents = '';
                 }
             }, 50);
         };
@@ -2493,11 +2100,9 @@ function drawBeautifulNick(ctx, text, w, h) {
     setTimeout(() => {
         currentStep.classList.remove('active', 'fade-out');
         nextStep.classList.add('active');
-
         currentProg.classList.remove('active');
         currentProg.classList.add('small');
         lineProg.classList.add('active');
-        
         nextProg.classList.remove('small');
         nextProg.classList.add('active');
     }, 300);
