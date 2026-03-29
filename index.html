@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.1</title>
+<title>Интерфейс v1.0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'Font16103'; src: url('16103.otf') format('opentype'); }
@@ -659,6 +659,131 @@
 
   #wizard-step1 h1, #wizard-step2 h1, #wizard-step3 h1 { color: #000; text-shadow: none; }
   #wizard-step1 p, #wizard-step2 p, #wizard-step3 p { color: #8E8E93; }
+
+  /* ========================================================
+     НОВЫЙ ИНТЕРФЕЙС ИТОГА (RESULT SCREEN iOS STYLE)
+     ======================================================== */
+  #ios-result-screen {
+    display: none; 
+    width: 100%; 
+    min-height: 100vh; 
+    background: #F2F2F7; 
+    position: absolute; 
+    top: 0; left: 0; 
+    z-index: 1500; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 0 20px 100px 20px; 
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  
+  #ios-result-canvas-container {
+    width: 100%; 
+    max-width: 440px; 
+    margin-top: 50px; 
+    border-radius: 20px; 
+    overflow: hidden; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  
+  #ios-result-canvas-container canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .ios-edit-title {
+    color: #8E8E93;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-left: 14px;
+    margin-bottom: 8px;
+    margin-top: 30px;
+    letter-spacing: 0.5px;
+    width: 100%;
+    max-width: 440px;
+    text-align: left;
+  }
+  
+  .ios-edit-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 15px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 440px;
+    box-sizing: border-box;
+  }
+  
+  .ios-edit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .ios-edit-divider {
+    height: 1px;
+    background: #E5E5EA;
+    width: 100%;
+  }
+  
+  .ios-eye { cursor: pointer; color: #8E8E93; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+  .ios-eye.hidden { opacity: 0.3; }
+  .ios-layer-name { flex-grow: 1; color: #000; font-size: 16px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ios-sub-label { color: #8E8E93; font-size: 13px; }
+  .ios-pos-btn { background: #71D5FF; color: #fff; border: none; border-radius: 12px; padding: 4px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;}
+  .ios-pos-btn:active { opacity: 0.7; }
+  .ios-download { cursor: pointer; color: #000; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+  
+  .ios-stroke-ctrl { display: flex; align-items: center; background: #00A0FF; border-radius: 12px; overflow: hidden; color: #fff; }
+  .ios-stroke-btn { background: transparent; border: none; color: #fff; padding: 4px 12px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .ios-stroke-btn:active { background: rgba(255,255,255,0.2); }
+  .ios-stroke-val { background: #71D5FF; padding: 4px 12px; font-size: 14px; font-weight: 500; }
+  
+  .ios-price-input { background: #A1D8FF; border: none; color: #fff; border-radius: 12px; padding: 4px 12px; width: 50px; text-align: center; font-size: 14px; font-weight: bold; outline: none; }
+  .ios-price-input:focus { box-shadow: 0 0 0 2px #00A0FF; }
+  
+  .ios-slider { -webkit-appearance: none; width: 80px; height: 4px; background: #E5E5EA; border-radius: 2px; outline: none; }
+  .ios-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #00A0FF; cursor: pointer; }
+
+  .ios-font-section-title { color: #8E8E93; font-size: 12px; margin-bottom: -5px; }
+  .ios-font-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .ios-font-item { color: #000; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; padding: 6px 4px; border: 2px solid transparent; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s; }
+  .ios-font-item.active { border-color: #00A0FF; }
+  
+  .ios-style-item { height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 8px; background-size: contain; background-position: center; background-repeat: no-repeat; transition: all 0.2s; }
+  .ios-style-item.active { border-color: #00A0FF; }
+  
+  .ios-fixed-download {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 400px;
+    background: #00A0FF;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 10px 20px rgba(0, 160, 255, 0.3);
+    z-index: 1600;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .ios-fixed-download:active { transform: translateX(-50%) scale(0.97); }
+
 </style>
 </head>
 <body>
@@ -824,11 +949,24 @@
   </div>
 </div>
 
-<div id="result-box">
+<!-- Оставлен старый интерфейс, скрытый через JS, чтобы не удалять логику -->
+<div id="result-box" style="display: none;">
   <div id="result-layout">
     <div id="cards-container"></div>
     <div id="layer-panel"></div>
   </div>
+</div>
+
+<!-- ========================================================
+     НОВЫЙ ИНТЕРФЕЙС iOS 26 (РЕЗУЛЬТАТ)
+     ======================================================== -->
+<div id="ios-result-screen">
+    <div id="ios-result-canvas-container"></div>
+    <div id="ios-result-layers"></div>
+    <button id="ios-download-all" class="ios-fixed-download">
+        Скачать 
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    </button>
 </div>
 
 <div class="reset" id="resetBtn">✕ Вернуться в меню</div>
@@ -1007,8 +1145,8 @@ let cachedTextCanvas = null;
 let animReq = null;
 let animText = { scale: 1, alpha: 1, targetScale: 1, targetAlpha: 1 };
 
-const eyeIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-const downloadIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+const eyeIconOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+const downloadSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
 
 function updateDropzoneUI() {
   if (stagedFiles.length > 0) {
@@ -1034,9 +1172,12 @@ resetBtn.onclick = () => {
 };
 
 function processImages(files) {
-  resultBox.style.display = 'block';
+  // Показываем новый экран результатов iOS
+  document.getElementById('ios-result-screen').style.display = 'flex';
+  // Кнопка резета
   resetBtn.style.display = 'block';
-  cardsContainer.innerHTML = '';
+  resetBtn.style.top = '10px'; resetBtn.style.right = '10px';
+  
   allGeneratedCards = [];
   window.layerState.offers = [];
   filesProcessed = 0;
@@ -1049,241 +1190,195 @@ function processImages(files) {
   }
 }
 
+// Переписанная функция для рендера в стиле iOS
 function renderLayerPanel() {
-    layerPanel.innerHTML = '';
+    const layersContainer = document.getElementById('ios-result-layers');
+    layersContainer.innerHTML = '';
     
-    let globalControl = document.createElement('div');
-    globalControl.className = 'layer-row';
-    globalControl.style.justifyContent = 'center';
-    globalControl.style.background = 'transparent';
-    globalControl.style.paddingTop = '0';
-    globalControl.style.marginBottom = '5px';
-    globalControl.innerHTML = `
-        <div class="global-stroke-control">
-            <span style="font-size: 14px; font-weight: bold; color: #fff;">Глобальная обводка:</span>
-            <div class="stroke-controls">
-                <button class="stroke-btn stroke-btn-minus" onclick="changeGlobalStroke(-1)" title="Уменьшить обводку у всех">-</button>
-                <div class="stroke-val" id="global-stroke-val">${window.layerState.globalStrokeWidth}</div>
-                <button class="stroke-btn stroke-btn-plus" onclick="changeGlobalStroke(1)" title="Увеличить обводку у всех">+</button>
-            </div>
-        </div>
-    `;
-    layerPanel.appendChild(globalControl);
+    // Title
+    let titleEl = document.createElement('div');
+    titleEl.className = 'ios-edit-title';
+    titleEl.innerText = 'СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ';
+    layersContainer.appendChild(titleEl);
 
-    let textWrapper = document.createElement('div');
-    textWrapper.className = 'layer-wrapper';
-
+    // --- CARD 1: MAIN TEXT ---
+    let textCard = document.createElement('div');
+    textCard.className = 'ios-edit-card';
+    
     let textRow = document.createElement('div');
-    textRow.className = 'layer-row';
+    textRow.className = 'ios-edit-row';
     let isTop = window.layerState.textPosition !== 'bottom';
-    textRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()" title="Скрыть/показать">${eyeIcon}</div>
-        <div class="layer-name">Большой текст (${window.layerState.textValue})</div>
-        <button class="stroke-btn" onclick="toggleTextPosition()" style="border-radius: 8px; padding: 5px 10px; margin-right: 10px;" title="Изменить позицию">
-            ${isTop ? '⬇ Вниз' : '⬆ Вверх'}
-        </button>
-        <div class="layer-download" onclick="downloadTextLayer()" title="Скачать">${downloadIcon}</div>
-    `;
-    textWrapper.appendChild(textRow);
-
-    let chevronSvgText = window.layerState.textExpanded 
-        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
-        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-        
-    let textFontToggle = document.createElement('div');
-    textFontToggle.className = 'font-toggle-row';
-    textFontToggle.innerHTML = `<span>Изменить шрифт:</span><span>${chevronSvgText}</span>`;
-    textFontToggle.onclick = () => {
-        window.layerState.textExpanded = !window.layerState.textExpanded;
-        renderLayerPanel();
-    };
-    textWrapper.appendChild(textFontToggle);
-
-    if (window.layerState.textExpanded) {
-        let expandContent = document.createElement('div');
-        expandContent.className = 'layer-expanded-content';
-        expandContent.style.paddingTop = '0';
-        let fontGrid = document.createElement('div');
-        fontGrid.className = 'font-selector-grid';
-        FONT_OPTIONS.forEach(f => {
-            let fBtn = document.createElement('div');
-            fBtn.className = 'font-btn' + (window.layerState.textFont === f.family ? ' active' : '');
-            fBtn.style.fontFamily = `'${f.family}', sans-serif`;
-            fBtn.innerText = window.layerState.textValue || 'TEXT';
-            fBtn.onclick = async (e) => {
-                e.stopPropagation();
-                window.layerState.textFont = f.family;
-                renderLayerPanel();
-                await document.fonts.load(`16px '${f.family}'`);
-                window.updateCachedTextCanvas();
-                startAnimation();
-            };
-            fontGrid.appendChild(fBtn);
-        });
-        expandContent.appendChild(fontGrid);
-        textWrapper.appendChild(expandContent);
-    }
-
-    let chevronSvgStyle = window.layerState.textStyleExpanded 
-        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
-        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-
-    let textStyleToggle = document.createElement('div');
-    textStyleToggle.className = 'font-toggle-row';
-    textStyleToggle.innerHTML = `<span>Изменить стиль:</span><span>${chevronSvgStyle}</span>`;
-    textStyleToggle.onclick = () => {
-        window.layerState.textStyleExpanded = !window.layerState.textStyleExpanded;
-        renderLayerPanel();
-    };
-    textWrapper.appendChild(textStyleToggle);
-
-    if (window.layerState.textStyleExpanded) {
-        let expandContentStyle = document.createElement('div');
-        expandContentStyle.className = 'layer-expanded-content';
-        expandContentStyle.style.paddingTop = '0';
-        
-        let styleGrid = document.createElement('div');
-        styleGrid.style.cssText = 'display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;';
-        TEXT_STYLES.forEach((st, sIdx) => {
-            let sBtn = document.createElement('div');
-            sBtn.style.height = '42px';
-            sBtn.style.borderRadius = '6px';
-            sBtn.style.cursor = 'pointer';
-            
-            let previewDataUrl = createStylePreviewURL(st, window.layerState.textFont);
-            sBtn.style.background = `#061d38 url(${previewDataUrl}) center/contain no-repeat`;
-            
-            sBtn.style.border = window.layerState.textStyleIndex === sIdx ? '2px solid #3bf83b' : '2px solid #1059a3';
-            sBtn.style.boxShadow = window.layerState.textStyleIndex === sIdx ? '0 0 10px rgba(59,248,59,0.3)' : 'none';
-            sBtn.onclick = (e) => {
-                e.stopPropagation();
-                window.layerState.textStyleIndex = sIdx;
-                renderLayerPanel();
-                window.updateCachedTextCanvas();
-                startAnimation();
-            };
-            styleGrid.appendChild(sBtn);
-        });
-        expandContentStyle.appendChild(styleGrid);
-        textWrapper.appendChild(expandContentStyle);
-    }
     
-    layerPanel.appendChild(textWrapper);
-
-    window.layerState.offers.forEach((offer, idx) => {
-        let isFree = offer.price.trim().toUpperCase() === 'FREE';
-        let inputColorStyle = isFree ? 'color: #3bf83b;' : 'color: #fff;';
-        
-        let row = document.createElement('div');
-        row.className = 'layer-row';
-        row.innerHTML = `
-            <div class="layer-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})" title="Скрыть/показать">${eyeIcon}</div>
-            <div class="layer-name">Акция ${idx + 1}</div>
-            <input type="text" class="layer-price-input" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
-                   style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)" title="Изменить цену">
-            
-            <button class="stroke-btn stroke-btn-main ${offer.hasStroke ? 'active' : ''}" onclick="toggleOfferStroke(${idx})">
-                Обводка ${offer.hasStroke ? '✔' : '❌'}
-            </button>
-
-            <div class="layer-download" onclick="downloadOfferLayer(${idx})" title="Скачать акцию">${downloadIcon}</div>
-        `;
-        layerPanel.appendChild(row);
+    // Форматируем текст, чтобы не ломать верстку длинным ником
+    let shortName = window.layerState.textValue;
+    if (shortName.length > 9) shortName = shortName.substring(0, 7) + '...';
+    
+    textRow.innerHTML = `
+        <div class="ios-eye ${window.layerState.textVisible ? '' : 'hidden'}" onclick="toggleTextLayer()">${eyeIconOpen}</div>
+        <div class="ios-layer-name">${shortName}</div>
+        <div class="ios-sub-label">расположение</div>
+        <button class="ios-pos-btn" onclick="toggleTextPosition()">${isTop ? 'ВНИЗ' : 'ВВЕРХ'}</button>
+        <div class="ios-download" onclick="downloadTextLayer()">${downloadSvg}</div>
+    `;
+    textCard.appendChild(textRow);
+    textCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
+    
+    // Fonts
+    textCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить шрифт</div>`);
+    let fontGrid = document.createElement('div');
+    fontGrid.className = 'ios-font-grid';
+    FONT_OPTIONS.forEach(f => {
+        let fBtn = document.createElement('div');
+        fBtn.className = 'ios-font-item' + (window.layerState.textFont === f.family ? ' active' : '');
+        fBtn.style.fontFamily = `'${f.family}', sans-serif`;
+        fBtn.innerText = shortName;
+        fBtn.onclick = async (e) => {
+            e.stopPropagation();
+            window.layerState.textFont = f.family;
+            renderLayerPanel();
+            await document.fonts.load(`16px '${f.family}'`);
+            window.updateCachedTextCanvas();
+            startAnimation();
+        };
+        fontGrid.appendChild(fBtn);
     });
+    textCard.appendChild(fontGrid);
+    
+    textCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
+    
+    // Styles
+    textCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить стиль</div>`);
+    let styleGrid = document.createElement('div');
+    styleGrid.className = 'ios-font-grid';
+    styleGrid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    TEXT_STYLES.forEach((st, sIdx) => {
+        let sBtn = document.createElement('div');
+        sBtn.className = 'ios-style-item' + (window.layerState.textStyleIndex === sIdx ? ' active' : '');
+        let previewDataUrl = createStylePreviewURL(st, window.layerState.textFont);
+        sBtn.style.backgroundImage = `url(${previewDataUrl})`;
+        sBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.layerState.textStyleIndex = sIdx;
+            renderLayerPanel();
+            window.updateCachedTextCanvas();
+            startAnimation();
+        };
+        styleGrid.appendChild(sBtn);
+    });
+    textCard.appendChild(styleGrid);
+    layersContainer.appendChild(textCard);
 
-    let luchRow = document.createElement('div');
-    luchRow.className = 'layer-row';
-    luchRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.luchVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('luch')" title="Скрыть/показать">${eyeIcon}</div>
-        <div class="layer-name">Свечение (Luch)</div>
-        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.luchOpacity}" oninput="changeOpacity('luch', this.value)" title="Прозрачность">
-        <div class="layer-download" onclick="downloadCosmeticLayer('luch')" title="Скачать лучи">${downloadIcon}</div>
-    `;
-    layerPanel.appendChild(luchRow);
-
-    let wmWrapper = document.createElement('div');
-    wmWrapper.className = 'layer-wrapper';
-
-    let wmRow = document.createElement('div');
-    wmRow.className = 'layer-row';
-    wmRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.watermarksVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('watermarks')" title="Скрыть/показать">${eyeIcon}</div>
-        <div class="layer-name">Маленькие тексты</div>
-        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)" title="Прозрачность">
-        <div class="layer-download" onclick="downloadCosmeticLayer('watermarks')" title="Скачать">${downloadIcon}</div>
-    `;
-    wmWrapper.appendChild(wmRow);
-
-    let chevronSvgWm = window.layerState.watermarksExpanded 
-        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
-        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+    // --- CARD 2: OFFERS & STROKE ---
+    if (window.layerState.offers.length > 0) {
+        let offersCard = document.createElement('div');
+        offersCard.className = 'ios-edit-card';
         
-    let wmFontToggle = document.createElement('div');
-    wmFontToggle.className = 'font-toggle-row';
-    wmFontToggle.innerHTML = `<span>Изменить шрифт:</span><span>${chevronSvgWm}</span>`;
-    wmFontToggle.onclick = () => {
-        window.layerState.watermarksExpanded = !window.layerState.watermarksExpanded;
-        renderLayerPanel();
-    };
-    wmWrapper.appendChild(wmFontToggle);
-
-    if (window.layerState.watermarksExpanded) {
-        let expandContent = document.createElement('div');
-        expandContent.className = 'layer-expanded-content';
-        let fontGrid = document.createElement('div');
-        fontGrid.className = 'font-selector-grid';
-        FONT_OPTIONS.forEach(f => {
-            let fBtn = document.createElement('div');
-            fBtn.className = 'font-btn' + (window.layerState.watermarksFont === f.family ? ' active' : '');
-            fBtn.style.fontFamily = `'${f.family}', sans-serif`;
-            fBtn.innerText = window.layerState.textValue || 'TEXT';
-            fBtn.onclick = async (e) => {
-                e.stopPropagation();
-                window.layerState.watermarksFont = f.family;
-                renderLayerPanel();
-                await document.fonts.load(`16px '${f.family}'`);
-                startAnimation();
-            };
-            fontGrid.appendChild(fBtn);
-        });
-        expandContent.appendChild(fontGrid);
-        wmWrapper.appendChild(expandContent);
-    }
-    layerPanel.appendChild(wmWrapper);
-
-    let starsRow = document.createElement('div');
-    starsRow.className = 'layer-row';
-    starsRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.starsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('stars')" title="Скрыть/показать">${eyeIcon}</div>
-        <div class="layer-name">Звезды</div>
-        <input type="range" class="layer-opacity-slider" min="0" max="1" step="0.05" value="${window.layerState.starsOpacity}" oninput="changeOpacity('stars', this.value)" title="Прозрачность">
-        <div class="layer-download" onclick="downloadCosmeticLayer('stars')" title="Скачать">${downloadIcon}</div>
-    `;
-    layerPanel.appendChild(starsRow);
-
-    if (window.layerState.isGeneratedBg) {
-        let pointsRow = document.createElement('div');
-        pointsRow.className = 'layer-row';
-        pointsRow.innerHTML = `
-            <div class="layer-eye ${window.layerState.pointsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('points')" title="Скрыть/показать">${eyeIcon}</div>
-            <div class="layer-name">Узор (Points)</div>
-            <div style="width: 60px;"></div>
-            <div class="layer-download" onclick="downloadCosmeticLayer('points')" title="Скачать узор">${downloadIcon}</div>
+        let strokeRow = document.createElement('div');
+        strokeRow.className = 'ios-edit-row';
+        strokeRow.innerHTML = `
+            <div class="ios-layer-name">Обводка у акций</div>
+            <div class="ios-sub-label">размер</div>
+            <div class="ios-stroke-ctrl">
+               <button class="ios-stroke-btn" onclick="changeGlobalStroke(-1)">–</button>
+               <div class="ios-stroke-val" id="global-stroke-val">${window.layerState.globalStrokeWidth}</div>
+               <button class="ios-stroke-btn" onclick="changeGlobalStroke(1)">+</button>
+            </div>
         `;
-        layerPanel.appendChild(pointsRow);
+        offersCard.appendChild(strokeRow);
+        
+        window.layerState.offers.forEach((offer, idx) => {
+            offersCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
+            
+            let isFree = offer.price.trim().toUpperCase() === 'FREE';
+            let inputColorStyle = isFree ? 'color: #3bf83b;' : '';
+            
+            let row = document.createElement('div');
+            row.className = 'ios-edit-row';
+            row.innerHTML = `
+                <div class="ios-eye ${offer.visible ? '' : 'hidden'}" onclick="toggleOffer(${idx})">${eyeIconOpen}</div>
+                <div class="ios-layer-name">Акция ${idx + 1}</div>
+                <div class="ios-sub-label">цена</div>
+                <input type="text" class="ios-price-input" id="layer-price-${idx}" value="${offer.price}" maxlength="5"
+                       style="${inputColorStyle}" oninput="updateOfferPriceFromLayer(${idx}, this.value)">
+                <div class="ios-download" onclick="downloadOfferLayer(${idx})">${downloadSvg}</div>
+            `;
+            offersCard.appendChild(row);
+        });
+        
+        layersContainer.appendChild(offersCard);
     }
 
-    let bgRow = document.createElement('div');
-    bgRow.className = 'layer-row';
-    bgRow.innerHTML = `
-        <div class="layer-eye ${window.layerState.bgVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('bg')" title="Скрыть/показать">${eyeIcon}</div>
-        <div class="layer-name">Фон (Оригинал)</div>
-        <div style="width: 60px;"></div>
-        <div class="layer-download" onclick="downloadCosmeticLayer('bg')" title="Скачать фон">${downloadIcon}</div>
-    `;
-    layerPanel.appendChild(bgRow);
+    // --- CARD 3: COSMETICS ---
+    let cosCard = document.createElement('div');
+    cosCard.className = 'ios-edit-card';
 
-    layerPanel.style.display = 'flex';
+    // Luch
+    cosCard.insertAdjacentHTML('beforeend', `
+        <div class="ios-edit-row">
+            <div class="ios-eye ${window.layerState.luchVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('luch')">${eyeIconOpen}</div>
+            <div class="ios-layer-name">Лучи</div>
+            <div class="ios-sub-label">прозрачность</div>
+            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.luchOpacity}" oninput="changeOpacity('luch', this.value)">
+            <div class="ios-download" onclick="downloadCosmeticLayer('luch')">${downloadSvg}</div>
+        </div>
+        <div class="ios-edit-divider"></div>
+    `);
+
+    // Watermarks
+    cosCard.insertAdjacentHTML('beforeend', `
+        <div class="ios-edit-row">
+            <div class="ios-eye ${window.layerState.watermarksVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('watermarks')">${eyeIconOpen}</div>
+            <div class="ios-layer-name">Текст min</div>
+            <div class="ios-sub-label">прозрачность</div>
+            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.watermarksOpacity}" oninput="changeOpacity('watermarks', this.value)">
+            <div class="ios-download" onclick="downloadCosmeticLayer('watermarks')">${downloadSvg}</div>
+        </div>
+        <div class="ios-edit-divider"></div>
+    `);
+    
+    // Watermark Font Setup
+    cosCard.insertAdjacentHTML('beforeend', `<div class="ios-font-section-title">Изменить шрифт</div>`);
+    let wmFontGrid = document.createElement('div');
+    wmFontGrid.className = 'ios-font-grid';
+    FONT_OPTIONS.forEach(f => {
+        let fBtn = document.createElement('div');
+        fBtn.className = 'ios-font-item' + (window.layerState.watermarksFont === f.family ? ' active' : '');
+        fBtn.style.fontFamily = `'${f.family}', sans-serif`;
+        fBtn.innerText = shortName;
+        fBtn.onclick = async (e) => {
+            e.stopPropagation();
+            window.layerState.watermarksFont = f.family;
+            renderLayerPanel();
+            await document.fonts.load(`16px '${f.family}'`);
+            startAnimation();
+        };
+        wmFontGrid.appendChild(fBtn);
+    });
+    cosCard.appendChild(wmFontGrid);
+    cosCard.insertAdjacentHTML('beforeend', `<div class="ios-edit-divider"></div>`);
+
+    // Stars
+    cosCard.insertAdjacentHTML('beforeend', `
+        <div class="ios-edit-row">
+            <div class="ios-eye ${window.layerState.starsVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('stars')">${eyeIconOpen}</div>
+            <div class="ios-layer-name">Звёзды</div>
+            <div class="ios-sub-label">прозрачность</div>
+            <input type="range" class="ios-slider" min="0" max="1" step="0.05" value="${window.layerState.starsOpacity}" oninput="changeOpacity('stars', this.value)">
+            <div class="ios-download" onclick="downloadCosmeticLayer('stars')">${downloadSvg}</div>
+        </div>
+    `);
+
+    // Background
+    cosCard.insertAdjacentHTML('beforeend', `
+        <div class="ios-edit-divider"></div>
+        <div class="ios-edit-row">
+            <div class="ios-eye ${window.layerState.bgVisible ? '' : 'hidden'}" onclick="toggleCosmeticLayer('bg')">${eyeIconOpen}</div>
+            <div class="ios-layer-name">Фон</div>
+            <div class="ios-download" onclick="downloadCosmeticLayer('bg')">${downloadSvg}</div>
+        </div>
+    `);
+
+    layersContainer.appendChild(cosCard);
 }
 
 window.changeGlobalStroke = (delta) => {
@@ -1957,29 +2052,15 @@ function setupPersistentCanvas() {
         persistentCanvas = document.createElement('canvas');
         persistentCtx = persistentCanvas.getContext('2d');
         
-        let container = document.createElement('div');
-        container.className = 'card-wrapper';
+        let container = document.getElementById('ios-result-canvas-container');
+        container.innerHTML = '';
+        container.appendChild(persistentCanvas);
         
-        let title = document.createElement('div');
-        title.innerText = "🌟 Итоговый результат";
-        title.style.fontSize = "22px";
-        title.style.marginBottom = "15px";
-        title.style.color = "#fff";
-        title.style.fontWeight = "bold";
-
-        let canvasWrapper = document.createElement('div');
-        canvasWrapper.className = 'canvas-display-wrapper';
-        canvasWrapper.appendChild(persistentCanvas);
-        
-        let btnWrap = document.createElement('div');
-        btnWrap.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;';
-
-        let btnHQ = document.createElement('a');
-        btnHQ.className = 'btn';
-        btnHQ.innerText = "🔥 Скачать HD результат";
+        let btnHQ = document.getElementById('ios-download-all');
         btnHQ.onclick = (e) => {
             e.preventDefault();
-            btnHQ.innerText = '⏳ Подготовка...';
+            let origHTML = btnHQ.innerHTML;
+            btnHQ.innerHTML = '⏳ Подготовка...';
             btnHQ.style.pointerEvents = 'none';
             setTimeout(() => {
                 try {
@@ -1990,18 +2071,11 @@ function setupPersistentCanvas() {
                 } catch(err) {
                     alert('Ошибка скачивания: ' + err.message);
                 } finally {
-                    btnHQ.innerText = "🔥 Скачать HD результат";
+                    btnHQ.innerHTML = origHTML;
                     btnHQ.style.pointerEvents = '';
                 }
             }, 50);
         };
-
-        btnWrap.appendChild(btnHQ);
-
-        container.appendChild(title);
-        container.appendChild(canvasWrapper);
-        container.appendChild(btnWrap);
-        cardsContainer.appendChild(container);
     }
     
     let scale = getHDScale();
@@ -2031,7 +2105,7 @@ function calculateLayoutTarget() {
   
   let isTop = window.layerState.textPosition !== 'bottom';
   let boxTop = (window.layerState.textVisible && isTop) ? (bgH * 0.22) : (bgH * 0.05);   
-  let boxBottom = (window.layerState.textVisible && !isTop) ? (bgH * 0.78) : (bgH * 0.96);               
+  let boxBottom = (window.layerState.textVisible && !isTop) ? (bgH * 0.78) : (bgH * 0.96);              
 
   let boxLeft = bgW * 0.04;                 
   let boxRight = bgW * 0.96;                
@@ -2313,7 +2387,7 @@ function drawBeautifulNick(ctx, text, w, h) {
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
             
-            txCtx.lineWidth = fontSize * 0.0154; txstrokeStyle = style.shadow; 
+            txCtx.lineWidth = fontSize * 0.0154; txCtx.strokeStyle = style.shadow; 
             for (let i = shadowDepth; i >= 0; i--) txCtx.strokeText(text, 0, i);
         } else if (style.outer) {
             txCtx.lineWidth = fontSize * 0.12; txCtx.strokeStyle = style.outer; 
@@ -2375,7 +2449,6 @@ function drawBeautifulNick(ctx, text, w, h) {
   let uploadedBaseImg = new Image();
   let selectedColor = null;
 
-  // Слушатель для скрытия клавиатуры при клике на фон (Шаг 2)
   wizardOverlay.addEventListener('pointerdown', (e) => {
     if (e.target !== wizardNickInput && e.target !== wizardNextBtn2 && document.activeElement === wizardNickInput) {
       wizardNickInput.blur();
@@ -2415,7 +2488,6 @@ function drawBeautifulNick(ctx, text, w, h) {
     }
   };
 
-  // Функция красивого перехода между шагами (размытие текста)
   function transitionStep(currentStep, nextStep, currentProg, nextProg, lineProg) {
     currentStep.classList.add('fade-out');
     setTimeout(() => {
@@ -2446,7 +2518,7 @@ function drawBeautifulNick(ctx, text, w, h) {
   wizardNickInput.addEventListener('input', checkStep2Ready);
 
   wizardNextBtn2.onclick = () => {
-    wizardNickInput.blur(); // Принудительно скрываем клавиатуру, если она открыта
+    wizardNickInput.blur(); 
     transitionStep(step2, step3, document.getElementById('prog-step2'), document.getElementById('prog-step3'), document.getElementById('prog-line2'));
   };
 
