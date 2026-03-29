@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.6 iOS Style</title>
+<title>Интерфейс v1.0.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Глобальный сброс для идеальной симметрии и исключения выпирания блоков */
@@ -37,7 +37,7 @@
   #result-box {
     display: none;
     width: 100%;
-    padding: 0 20px 140px 20px; /* Убрал отступ сверху, он теперь у cards-container */
+    padding: 0 20px 140px 20px; 
     z-index: 20;
     background: #F2F2F7; /* iOS background */
     min-height: 100vh;
@@ -66,7 +66,7 @@
     padding-top: 20px;
     padding-bottom: 5px;
     background: #F2F2F7;
-    box-shadow: none; /* Убрали старую тень, которая лезла наверх */
+    box-shadow: none; 
     z-index: 100;
   }
 
@@ -98,7 +98,6 @@
     overflow: hidden;
     border-radius: 24px;
     background: transparent;
-    /* Убрали черную тень (размытие) у самой работы для четких краев */
   }
   
   .canvas-display-wrapper canvas {
@@ -128,7 +127,7 @@
     font-size: 13px;
     text-transform: uppercase;
     margin-top: 20px;
-    margin-bottom: 4px; /* Одинаковый отступ для всех заголовков разделов */
+    margin-bottom: 12px; /* Идеальное расстояние 12px */
     margin-left: 14px;
     letter-spacing: 0.5px;
     width: 100%;
@@ -138,7 +137,7 @@
     background: #fff;
     border-radius: 24px;
     padding: 0 20px;
-    margin-bottom: 8px; /* Выровнено с gap в главном меню */
+    margin-bottom: 24px; /* Отступ между группами слоев */
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -150,7 +149,7 @@
     padding: 16px 0;
     border-bottom: 0.5px solid #E5E5EA;
     gap: 12px;
-    min-height: 54px; /* Идеальная толщина (как в Стиль Фона) */
+    min-height: 54px; 
   }
 
   .ios-layer-row:last-child {
@@ -260,10 +259,10 @@
   input[type=range].ios-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     height: 18px;
-    width: 18px;
-    border-radius: 50%;
+    width: 28px; 
+    border-radius: 10px; 
     background: #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.17); 
     margin-top: -7px;
     cursor: pointer;
   }
@@ -344,22 +343,23 @@
     padding: 60px 20px 40px 20px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    /* Убрали gap, чтобы контролировать отступы вплоть до пикселя */
     min-height: 100vh;
   }
 
   .ios-card {
     background: #fff;
-    border-radius: 24px;
+    border-radius: 100px; /* Максимальный радиус только у одиночных кнопок */
     padding: 10px 20px;
     display: flex;
     align-items: center;
-    min-height: 54px; /* Идеальная толщина */
+    min-height: 54px; 
     width: 100%;
+    margin-bottom: 24px; /* Идеальное расстояние 24px */
   }
 
   .ios-card.ios-profile { padding: 16px 20px; min-height: auto; }
-  .ios-card-group { background: #fff; border-radius: 24px; padding: 0 20px; display: flex; flex-direction: column; width: 100%; }
+  .ios-card-group { background: #fff; border-radius: 24px; padding: 0 20px; display: flex; flex-direction: column; width: 100%; margin-bottom: 24px; }
 
   .ios-avatar {
     width: 54px; height: 54px;
@@ -407,8 +407,8 @@
       inset 0px 1px 0px rgba(255, 255, 255, 0.65),   
       inset 0px -1px 0px rgba(0, 0, 0, 0.15),        
       0px 24px 48px rgba(0, 0, 0, 0.15);            
-    height: 54px; /* Идеальная толщина, как у карточек меню */
-    width: calc(100% - 64px); /* Уменьшенная длина */
+    height: 54px; 
+    width: calc(100% - 64px); 
     max-width: 350px;
     display: flex;
     align-items: center;
@@ -545,7 +545,7 @@
       </div>
     </div>
 
-    <div class="ios-card ios-menu-item" style="margin-top: 8px;">
+    <div class="ios-card ios-menu-item">
       <div class="ios-icon-box" style="background: #007AFF;">
          <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
            <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="white" stroke="none">
@@ -564,7 +564,7 @@
       </div>
     </div>
 
-    <div class="ios-card-group" style="margin-top: 8px;">
+    <div class="ios-card-group">
       <div class="ios-menu-item">
         <div class="ios-icon-box" style="background: #FF9500;">
            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
