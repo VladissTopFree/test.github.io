@@ -2,8 +2,8 @@
 <html lang="ru"> 
 <head> 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.8</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+<title>Интерфейс v1.0.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Глобальный сброс для идеальной симметрии и исключения выпирания блоков */
@@ -30,6 +30,21 @@
     min-height: 100vh;
     overflow-x: hidden;
     transition: background 0.3s, color 0.3s;
+    
+    /* Запрет выделения, копирования и масштабирования двойным тапом */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* Разрешаем выделение только внутри инпутов, чтобы можно было вводить текст */
+  input {
+    -webkit-user-select: auto;
+    user-select: auto;
   }
   
   input[type="file"] { display: none; }
@@ -297,7 +312,7 @@
     border-radius: 12px;
     white-space: nowrap;
     overflow: hidden;
-    transition: border-color 0.2s;
+    transition: border-color 0.4s ease-in-out; /* Плавная анимация как на шаге 1 */
   }
   .ios-font-item.active {
     border-color: #00A0FF;
@@ -317,7 +332,7 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    transition: border-color 0.2s;
+    transition: border-color 0.4s ease-in-out; /* Плавная анимация как на шаге 1 */
   }
   .ios-style-item.active {
     border-color: #00A0FF;
@@ -517,7 +532,7 @@
 
 </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <!-- ДАШБОРД -->
 <div id="ios-dashboard">
@@ -888,22 +903,48 @@ function processImages(files) {
 
 window.setFont = async (fontFamily) => {
     window.layerState.textFont = fontFamily;
-    renderLayerPanel();
+    
+    // Плавно меняем класс active без перерисовки всей панели
+    document.querySelectorAll('.main-font-item').forEach(el => {
+        if (el.getAttribute('data-font') === fontFamily) el.classList.add('active');
+        else el.classList.remove('active');
+    });
+
     await document.fonts.load(`16px '${fontFamily}'`);
+    
+    // Обновляем превью стилей с новым шрифтом
+    document.querySelectorAll('.main-style-item').forEach((el) => {
+        let sIdx = parseInt(el.getAttribute('data-style'));
+        let previewDataUrl = createStylePreviewURL(TEXT_STYLES[sIdx], fontFamily);
+        el.style.backgroundImage = `url(${previewDataUrl})`;
+    });
+
     window.updateCachedTextCanvas();
     startAnimation();
 };
 
 window.setStyle = (index) => {
     window.layerState.textStyleIndex = index;
-    renderLayerPanel();
+    
+    // Плавно меняем класс active без перерисовки всей панели
+    document.querySelectorAll('.main-style-item').forEach(el => {
+        if (parseInt(el.getAttribute('data-style')) === index) el.classList.add('active');
+        else el.classList.remove('active');
+    });
+
     window.updateCachedTextCanvas();
     startAnimation();
 };
 
 window.setWmFont = async (fontFamily) => {
     window.layerState.watermarksFont = fontFamily;
-    renderLayerPanel();
+    
+    // Плавно меняем класс active без перерисовки всей панели
+    document.querySelectorAll('.wm-font-item').forEach(el => {
+        if (el.getAttribute('data-font') === fontFamily) el.classList.add('active');
+        else el.classList.remove('active');
+    });
+
     await document.fonts.load(`16px '${fontFamily}'`);
     startAnimation();
 };
@@ -940,7 +981,7 @@ function renderLayerPanel() {
     html += `<div class="ios-font-grid">`;
     FONT_OPTIONS.forEach((f, idx) => {
         let activeCls = window.layerState.textFont === f.family ? 'active' : '';
-        html += `<div class="ios-font-item ${activeCls}" style="font-family: '${f.family}', sans-serif;" onclick="setFont('${f.family}')">${window.layerState.textValue || 'TEXT'}</div>`;
+        html += `<div class="ios-font-item main-font-item ${activeCls}" data-font="${f.family}" style="font-family: '${f.family}', sans-serif;" onclick="setFont('${f.family}')">${window.layerState.textValue || 'TEXT'}</div>`;
     });
     html += `</div>`;
 
@@ -949,7 +990,7 @@ function renderLayerPanel() {
     TEXT_STYLES.forEach((st, sIdx) => {
         let activeCls = window.layerState.textStyleIndex === sIdx ? 'active' : '';
         let previewDataUrl = createStylePreviewURL(st, window.layerState.textFont);
-        html += `<div class="ios-style-item ${activeCls}" style="background-image: url(${previewDataUrl});" onclick="setStyle(${sIdx})"></div>`;
+        html += `<div class="ios-style-item main-style-item ${activeCls}" data-style="${sIdx}" style="background-image: url(${previewDataUrl});" onclick="setStyle(${sIdx})"></div>`;
     });
     html += `</div>`;
     html += `</div>`;
@@ -1032,7 +1073,7 @@ function renderLayerPanel() {
     html += `<div class="ios-font-grid">`;
     FONT_OPTIONS.forEach((f, idx) => {
         let activeCls = window.layerState.watermarksFont === f.family ? 'active' : '';
-        html += `<div class="ios-font-item ${activeCls}" style="font-family: '${f.family}', sans-serif;" onclick="setWmFont('${f.family}')">${window.layerState.textValue || 'TEXT'}</div>`;
+        html += `<div class="ios-font-item wm-font-item ${activeCls}" data-font="${f.family}" style="font-family: '${f.family}', sans-serif;" onclick="setWmFont('${f.family}')">${window.layerState.textValue || 'TEXT'}</div>`;
     });
     html += `</div>`;
 
