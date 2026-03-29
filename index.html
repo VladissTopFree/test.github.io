@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.7 iOS Style</title>
+<title>Интерфейс v1.0.6 iOS Style</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Глобальный сброс для идеальной симметрии и исключения выпирания блоков */
@@ -60,14 +60,26 @@
     flex-direction: column;
     align-items: center;
     
-    /* Закрепление картинки и мягкая тень цветом фона для плавного исчезновения слоев */
+    /* Закрепление картинки и мягкая тень цветом фона ТОЛЬКО ВНИЗ */
     position: sticky;
     top: 0;
     padding-top: 20px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     background: #F2F2F7;
-    box-shadow: 0 10px 25px 20px #F2F2F7;
+    box-shadow: none; /* Убрали старую тень, которая лезла наверх */
     z-index: 100;
+  }
+
+  /* Градиент, создающий плавное исчезновение списков под картинкой */
+  #cards-container::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(180deg, #F2F2F7 0%, rgba(242,242,247,0) 100%);
+    pointer-events: none;
   }
 
   .card-wrapper {
@@ -85,8 +97,8 @@
     width: 100%;
     overflow: hidden;
     border-radius: 24px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    background: #fff;
+    background: transparent;
+    /* Убрали черную тень (размытие) у самой работы для четких краев */
   }
   
   .canvas-display-wrapper canvas {
@@ -380,7 +392,7 @@
     100% { background-position: 0% 50%; } 
   }
 
-  #ios-btn-create, .ios-btn-next {
+  .ios-action-btn {
     background: linear-gradient(110deg, #3390ec 38%, #8ad0ff 50%, #3390ec 62%);
     background-size: 300% 100%;
     color: #fff;
@@ -402,25 +414,26 @@
     align-items: center;
     justify-content: center;
   }
+  .ios-action-btn:active { transform: scale(0.97); }
 
   #ios-btn-create { 
     margin-top: auto; 
     align-self: center; 
     animation: shimmerBg 4s infinite linear; 
   }
-  #ios-btn-create:active, .ios-btn-next:active { transform: scale(0.97); }
 
   .ios-btn-next {
     position: absolute;
     bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     display: none; 
   }
   .ios-btn-next.show { display: flex; animation: slideUpFade 0.3s ease-out forwards; }
   @keyframes slideUpFade {
-    from { opacity: 0; transform: translate(-50%, 20px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   #wizard-overlay {
@@ -589,7 +602,7 @@
     </div>
 
     <!-- Кнопка "Создать" автоматически занимает правильное место внизу за счёт margin-top: auto -->
-    <button id="ios-btn-create">Создать</button>
+    <button id="ios-btn-create" class="ios-action-btn">Создать</button>
   </div>
 </div>
 
@@ -627,14 +640,14 @@
        <svg viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>
     </div>
     <input type="file" id="wizard-bg-input" accept="image/*" style="display:none;">
-    <button id="wizard-next-btn1" class="ios-btn-next">Далее</button>
+    <button id="wizard-next-btn1" class="ios-action-btn ios-btn-next">Далее</button>
   </div>
   
   <div id="wizard-step2" class="wizard-step">
     <div class="ios-wizard-title">Создание акции</div>
     <div class="ios-wizard-subtitle">Ник. Напиши свой ник, который<br>будет располагаться на твоей работе.</div>
     <input type="text" id="wizard-nick-input" placeholder="Введи свой ник..." maxlength="16">
-    <button id="wizard-next-btn2" class="ios-btn-next">Далее</button>
+    <button id="wizard-next-btn2" class="ios-action-btn ios-btn-next">Далее</button>
   </div>
 
   <div id="wizard-step3" class="wizard-step">
@@ -646,7 +659,7 @@
     </div>
     <div id="wizard-uploaded-count" class="ios-uploaded-count">Загружено: 0</div>
     <input type="file" id="file" accept="image/*" multiple style="display:none;">
-    <button id="wizard-next-btn3" class="ios-btn-next">Далее</button>
+    <button id="wizard-next-btn3" class="ios-action-btn ios-btn-next">Далее</button>
   </div>
 </div>
 
@@ -1758,20 +1771,17 @@ function setupPersistentCanvas() {
         hdBtnWrap.style.left = '0';
         hdBtnWrap.style.width = '100%';
         hdBtnWrap.style.height = '120px';
-        hdBtnWrap.style.background = 'linear-gradient(180deg, rgba(242,242,247,0) 0%, rgba(242,242,247,0.85) 35%, rgba(242,242,247,1) 60%)';
+        hdBtnWrap.style.background = 'linear-gradient(180deg, rgba(242,242,247,0) 0%, rgba(242,242,247,0.9) 35%, rgba(242,242,247,1) 100%)';
         hdBtnWrap.style.display = 'flex';
         hdBtnWrap.style.justifyContent = 'center';
         hdBtnWrap.style.alignItems = 'center';
         hdBtnWrap.style.zIndex = '1000';
-        hdBtnWrap.style.paddingTop = '30px'; 
+        hdBtnWrap.style.paddingTop = '20px'; 
         
         let hdBtn = document.createElement('button');
         hdBtn.id = 'ios-btn-download-all';
-        hdBtn.className = 'ios-btn-next show';
-        hdBtn.style.position = 'relative'; 
-        hdBtn.style.width = 'calc(100% - 64px)';
-        hdBtn.style.maxWidth = '350px';
-        hdBtn.style.height = '54px'; /* Синхронизируем толщину со "Стиль фона" */
+        hdBtn.className = 'ios-action-btn'; 
+        hdBtn.style.margin = '0 auto'; /* Дополнительная страховка для центрирования */
         hdBtn.innerHTML = `Скачать <svg style="margin-left:8px; width:20px; height:20px" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
         
         hdBtn.onclick = (e) => {
