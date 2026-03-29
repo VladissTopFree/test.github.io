@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.6 iOS Style</title>
+<title>Интерфейс v1.0.7 iOS Style</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Глобальный сброс для идеальной симметрии и исключения выпирания блоков */
@@ -37,7 +37,7 @@
   #result-box {
     display: none;
     width: 100%;
-    padding: 60px 20px 100px 20px;
+    padding: 0 20px 140px 20px; /* Убрал отступ сверху, он теперь у cards-container */
     z-index: 20;
     background: #F2F2F7; /* iOS background */
     min-height: 100vh;
@@ -48,7 +48,7 @@
     flex-direction: column;
     width: 100%;
     max-width: 440px;
-    gap: 20px;
+    gap: 12px;
     align-items: center;
     justify-content: flex-start;
     margin: 0 auto;
@@ -59,9 +59,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Закрепление картинки при скролле */
+    
+    /* Закрепление картинки и мягкая тень цветом фона для плавного исчезновения слоев */
     position: sticky;
-    top: 15px;
+    top: 0;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    background: #F2F2F7;
+    box-shadow: 0 10px 25px 20px #F2F2F7;
     z-index: 100;
   }
 
@@ -92,22 +97,6 @@
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
-
-  .reset {
-    position: fixed;
-    top: 15px; left: 15px;
-    background: rgba(0,0,0,0.1);
-    color: #000;
-    padding: 8px 14px;
-    border-radius: 16px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    z-index: 110;
-    display: none;
-    transition: background 0.2s;
-  }
-  .reset:hover { background: rgba(0,0,0,0.15); }
   
   #layer-panel {
     width: 100%;
@@ -126,10 +115,11 @@
     color: #8E8E93;
     font-size: 13px;
     text-transform: uppercase;
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin-top: 20px;
+    margin-bottom: 4px; /* Одинаковый отступ для всех заголовков разделов */
     margin-left: 14px;
     letter-spacing: 0.5px;
+    width: 100%;
   }
 
   .ios-layer-group {
@@ -216,7 +206,7 @@
   }
   .ios-icon-btn:active { opacity: 0.4; }
 
-  .ios-eye-icon svg { width: 22px; height: 22px; transition: fill 0.2s; }
+  .ios-icon-btn svg { width: 22px; height: 22px; transition: fill 0.2s; }
   .ios-eye-icon.hidden svg { fill: #E5E5EA !important; }
 
   .ios-stroke-control {
@@ -661,7 +651,6 @@
 </div>
 
 <div id="result-box">
-  <div class="reset" id="resetBtn">✕ Вернуться</div>
   <div id="result-layout">
     <div id="cards-container"></div>
     <div id="layer-panel"></div>
@@ -672,7 +661,6 @@
 const fileInput = document.getElementById("file");
 const resultBox = document.getElementById("result-box");
 const cardsContainer = document.getElementById("cards-container");
-const resetBtn = document.getElementById("resetBtn");
 const layerPanel = document.getElementById("layer-panel");
 
 let rawBgImage = null; 
@@ -839,8 +827,15 @@ let cachedTextCanvas = null;
 let animReq = null;
 let animText = { scale: 1, alpha: 1, targetScale: 1, targetAlpha: 1 };
 
-const eyeIconSVG = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-const downloadIconSVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+const eyeVisibleSVG = `<svg viewBox="0 0 512 512" fill="currentColor"><g transform="translate(0,512) scale(0.1,-0.1)"><path d="M2405 4300 c-863 -44 -1660 -505 -2148 -1245 -90 -138 -250 -453 -250 -495 0 -42 160 -357 250 -495 409 -620 1033 -1046 1748 -1194 342 -70 762 -71 1107 -1 713 145 1343 575 1750 1195 92 140 251 453 251 495 0 42 -159 357 -250 495 -216 327 -483 594 -808 808 -135 88 -391 218 -539 272 -231 85 -534 150 -748 160 -62 3 -138 7 -168 8 -30 2 -118 0 -195 -3z m356 -595 c416 -73 764 -372 901 -775 78 -232 78 -508 0 -740 -117 -345 -387 -615 -732 -732 -171 -58 -391 -75 -570 -43 -480 84 -861 465 -945 944 -32 178 -15 400 43 571 136 400 481 699 894 774 100 19 307 19 409 1z"/><path d="M2430 3246 c-154 -34 -250 -85 -360 -196 -142 -141 -204 -290 -204 -485 0 -131 17 -204 76 -325 81 -166 259 -307 448 -357 87 -23 253 -23 340 0 244 64 444 264 507 507 23 88 23 254 0 340 -50 190 -191 367 -357 448 -47 23 -112 49 -145 57 -85 23 -227 27 -305 11z"/></g></svg>`;
+
+const eyeHiddenSVG = `<svg viewBox="0 0 512 512" fill="currentColor"><g transform="translate(0,512) scale(0.1,-0.1)"><path d="M4575 4466 c-16 -8 -906 -891 -1977 -1963 -1742 -1743 -1947 -1952 -1953 -1985 -22 -120 69 -212 189 -193 38 7 71 37 442 407 l402 400 103 -37 c269 -95 469 -129 774 -129 247 -1 358 13 579 68 651 165 1267 635 1717 1309 99 149 117 191 105 249 -14 73 -210 391 -342 558 -71 89 -350 374 -419 428 l-40 31 317 318 c274 276 317 323 323 356 25 132 -101 237 -220 183z m-1096 -1633 c84 -282 33 -570 -147 -823 -205 -288 -579 -452 -912 -400 -78 12 -200 48 -200 58 0 4 56 63 125 132 l125 125 72 -3 c358 -15 671 298 656 656 l-3 72 125 125 c69 69 128 125 132 125 4 0 16 -30 27 -67z"/><path d="M2375 4154 c-456 -48 -846 -194 -1220 -457 -344 -243 -637 -547 -886 -920 -100 -150 -116 -190 -105 -251 8 -42 175 -294 292 -441 111 -139 407 -436 543 -544 l104 -83 309 309 c169 169 308 313 308 319 0 6 -14 39 -31 75 -58 118 -82 236 -83 394 0 174 23 275 94 421 100 207 253 356 465 455 131 62 235 83 400 83 158 -1 276 -25 394 -83 36 -17 69 -31 75 -31 6 0 135 124 286 275 l274 274 -50 21 c-155 67 -407 135 -616 166 -99 14 -469 27 -553 18z"/><path d="M2420 3185 c-299 -67 -514 -351 -497 -655 4 -82 31 -200 45 -200 9 0 822 813 822 822 0 4 -26 14 -57 24 -79 23 -231 27 -313 9z"/></g></svg>`;
+
+const downloadIconSVG = `<svg viewBox="0 0 512 512" fill="currentColor"><g transform="translate(0,512) scale(0.1,-0.1)"><path d="M2510 4389 c-32 -13 -87 -66 -108 -104 -15 -27 -17 -122 -22 -1038 l-5 -1007 -345 346 c-226 227 -359 353 -385 365 -72 33 -163 17 -224 -41 -33 -32 -61 -98 -61 -145 0 -87 13 -102 563 -653 287 -288 540 -534 562 -547 56 -32 102 -38 160 -20 46 13 89 54 601 567 536 537 552 554 563 604 30 128 -68 254 -198 254 -80 0 -92 -9 -463 -379 l-358 -355 0 1002 c0 1086 2 1041 -53 1100 -51 55 -157 79 -227 51z"/><path d="M870 1724 c-46 -20 -77 -50 -103 -99 -19 -36 -22 -60 -25 -242 -7 -333 17 -459 110 -599 78 -117 202 -208 343 -251 57 -17 131 -18 1390 -18 l1330 0 75 23 c105 33 196 89 271 169 77 82 122 164 149 269 17 67 20 111 20 344 0 260 -1 268 -23 311 -66 125 -235 145 -331 39 -19 -21 -39 -56 -45 -77 -6 -22 -11 -139 -11 -273 0 -206 -3 -240 -19 -275 -23 -51 -79 -101 -128 -114 -56 -16 -2528 -15 -2574 0 -51 18 -97 55 -122 102 -21 40 -22 57 -27 307 -5 284 -8 296 -62 347 -54 51 -149 67 -218 37z"/></g></svg>`;
+
+function getEyeSVG(isVisible) {
+    return isVisible ? eyeVisibleSVG : eyeHiddenSVG;
+}
 
 function updateDropzoneUI() {
   if (stagedFiles.length > 0) {
@@ -861,15 +856,10 @@ function handleFilesAdded(files) {
 
 fileInput.onchange = (e) => { if (e.target.files.length > 0) handleFilesAdded(e.target.files); };
 
-resetBtn.onclick = () => {
-  location.reload();
-};
-
 function processImages(files) {
   document.body.style.background = "#F2F2F7";
   document.body.style.color = "#000";
   resultBox.style.display = 'block';
-  resetBtn.style.display = 'block';
   cardsContainer.innerHTML = '';
   allGeneratedCards = [];
   window.layerState.offers = [];
@@ -909,7 +899,8 @@ function renderLayerPanel() {
     layerPanel.innerHTML = '';
     let html = '';
 
-    html += `<div class="ios-section-title" style="margin-left: 14px; margin-bottom: 8px;">СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ</div>`;
+    // Заголовок раздела "СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ"
+    html += `<div class="ios-section-title">СЛОИ ДЛЯ РЕДАКТИРОВАНИЯ</div>`;
 
     // --- CARD 1: MAIN TEXT ---
     let isTop = window.layerState.textPosition !== 'bottom';
@@ -919,7 +910,7 @@ function renderLayerPanel() {
     html += `
         <div class="ios-layer-row" style="border-bottom:none; padding-bottom: 0;">
             <div class="ios-icon-btn ios-eye-icon ${textEyeClass}" onclick="toggleTextLayer()">
-                ${eyeIconSVG}
+                ${getEyeSVG(window.layerState.textVisible)}
             </div>
             <div class="ios-layer-name" style="max-width: 120px;">${window.layerState.textValue.substring(0, 10)}${window.layerState.textValue.length > 10 ? '...' : ''}</div>
             <div class="ios-layer-action-text">расположение</div>
@@ -975,7 +966,7 @@ function renderLayerPanel() {
             html += `
                 <div class="ios-layer-row">
                     <div class="ios-icon-btn ios-eye-icon ${offerEyeClass}" onclick="toggleOffer(${idx})">
-                        ${eyeIconSVG}
+                        ${getEyeSVG(offer.visible)}
                     </div>
                     <div class="ios-layer-name">Акция ${idx + 1}</div>
                     <div class="ios-layer-action-text">цена</div>
@@ -998,7 +989,7 @@ function renderLayerPanel() {
     html += `
         <div class="ios-layer-row">
             <div class="ios-icon-btn ios-eye-icon ${luchEyeClass}" onclick="toggleCosmeticLayer('luch')">
-                 ${eyeIconSVG}
+                 ${getEyeSVG(window.layerState.luchVisible)}
             </div>
             <div class="ios-layer-name">Лучи</div>
             <div class="ios-layer-action-text">прозрачность</div>
@@ -1014,7 +1005,7 @@ function renderLayerPanel() {
     html += `
         <div class="ios-layer-row" style="border-bottom:none; padding-bottom:0;">
             <div class="ios-icon-btn ios-eye-icon ${wmEyeClass}" onclick="toggleCosmeticLayer('watermarks')">
-                 ${eyeIconSVG}
+                 ${getEyeSVG(window.layerState.watermarksVisible)}
             </div>
             <div class="ios-layer-name">Текст min</div>
             <div class="ios-layer-action-text">прозрачность</div>
@@ -1037,7 +1028,7 @@ function renderLayerPanel() {
     html += `
         <div class="ios-layer-row">
             <div class="ios-icon-btn ios-eye-icon ${starsEyeClass}" onclick="toggleCosmeticLayer('stars')">
-                 ${eyeIconSVG}
+                 ${getEyeSVG(window.layerState.starsVisible)}
             </div>
             <div class="ios-layer-name">Звёзды</div>
             <div class="ios-layer-action-text">прозрачность</div>
@@ -1054,7 +1045,7 @@ function renderLayerPanel() {
         html += `
             <div class="ios-layer-row">
                 <div class="ios-icon-btn ios-eye-icon ${pointsEyeClass}" onclick="toggleCosmeticLayer('points')">
-                     ${eyeIconSVG}
+                     ${getEyeSVG(window.layerState.pointsVisible)}
                 </div>
                 <div class="ios-layer-name">Узор</div>
                 <div style="flex-grow:1;"></div>
@@ -1070,7 +1061,7 @@ function renderLayerPanel() {
     html += `
         <div class="ios-layer-row">
             <div class="ios-icon-btn ios-eye-icon ${bgEyeClass}" onclick="toggleCosmeticLayer('bg')">
-                 ${eyeIconSVG}
+                 ${getEyeSVG(window.layerState.bgVisible)}
             </div>
             <div class="ios-layer-name">Фон</div>
             <div style="flex-grow:1;"></div>
@@ -1081,7 +1072,6 @@ function renderLayerPanel() {
     `;
 
     html += `</div>`;
-    html += `<div style="height: 120px;"></div>`; 
 
     layerPanel.innerHTML = html;
     layerPanel.style.display = 'flex';
@@ -1760,15 +1750,25 @@ function setupPersistentCanvas() {
         container.appendChild(canvasWrapper);
         cardsContainer.appendChild(container);
 
-        // Fixed bottom download button
+        // Fixed bottom download button wrap with gradient mask effect
+        let hdBtnWrap = document.createElement('div');
+        hdBtnWrap.id = 'download-btn-wrap';
+        hdBtnWrap.style.position = 'fixed';
+        hdBtnWrap.style.bottom = '0';
+        hdBtnWrap.style.left = '0';
+        hdBtnWrap.style.width = '100%';
+        hdBtnWrap.style.height = '120px';
+        hdBtnWrap.style.background = 'linear-gradient(180deg, rgba(242,242,247,0) 0%, rgba(242,242,247,0.85) 35%, rgba(242,242,247,1) 60%)';
+        hdBtnWrap.style.display = 'flex';
+        hdBtnWrap.style.justifyContent = 'center';
+        hdBtnWrap.style.alignItems = 'center';
+        hdBtnWrap.style.zIndex = '1000';
+        hdBtnWrap.style.paddingTop = '30px'; 
+        
         let hdBtn = document.createElement('button');
         hdBtn.id = 'ios-btn-download-all';
         hdBtn.className = 'ios-btn-next show';
-        hdBtn.style.position = 'fixed';
-        hdBtn.style.bottom = '40px';
-        hdBtn.style.left = '50%';
-        hdBtn.style.transform = 'translateX(-50%)';
-        hdBtn.style.zIndex = '1000';
+        hdBtn.style.position = 'relative'; 
         hdBtn.style.width = 'calc(100% - 64px)';
         hdBtn.style.maxWidth = '350px';
         hdBtn.style.height = '54px'; /* Синхронизируем толщину со "Стиль фона" */
@@ -1793,7 +1793,9 @@ function setupPersistentCanvas() {
                 }
             }, 50);
         };
-        document.body.appendChild(hdBtn);
+        
+        hdBtnWrap.appendChild(hdBtn);
+        document.body.appendChild(hdBtnWrap);
     }
     
     let scale = getHDScale();
