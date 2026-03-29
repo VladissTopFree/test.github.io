@@ -3,7 +3,7 @@
 <head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Интерфейс v1.0.5 iOS Style</title>
+<title>Интерфейс v1.0.6 iOS Style</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Глобальный сброс для идеальной симметрии и исключения выпирания блоков */
@@ -37,7 +37,7 @@
   #result-box {
     display: none;
     width: 100%;
-    padding: 60px 20px 0 20px;
+    padding: 60px 20px 100px 20px;
     z-index: 20;
     background: #F2F2F7; /* iOS background */
     min-height: 100vh;
@@ -59,6 +59,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Закрепление картинки при скролле */
+    position: sticky;
+    top: 15px;
+    z-index: 100;
   }
 
   .card-wrapper {
@@ -76,8 +80,7 @@
     width: 100%;
     overflow: hidden;
     border-radius: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     background: #fff;
   }
   
@@ -92,7 +95,7 @@
 
   .reset {
     position: fixed;
-    top: 20px; right: 20px;
+    top: 15px; left: 15px;
     background: rgba(0,0,0,0.1);
     color: #000;
     padding: 8px 14px;
@@ -100,7 +103,7 @@
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    z-index: 40;
+    z-index: 110;
     display: none;
     transition: background 0.2s;
   }
@@ -123,7 +126,7 @@
     color: #8E8E93;
     font-size: 13px;
     text-transform: uppercase;
-    margin-top: 20px;
+    margin-top: 12px;
     margin-bottom: 8px;
     margin-left: 14px;
     letter-spacing: 0.5px;
@@ -133,7 +136,7 @@
     background: #fff;
     border-radius: 24px;
     padding: 0 20px;
-    margin-bottom: 16px;
+    margin-bottom: 8px; /* Выровнено с gap в главном меню */
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -403,6 +406,8 @@
       inset 0px -1px 0px rgba(0, 0, 0, 0.15),        
       0px 24px 48px rgba(0, 0, 0, 0.15);            
     height: 54px; /* Идеальная толщина, как у карточек меню */
+    width: calc(100% - 64px); /* Уменьшенная длина */
+    max-width: 350px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -412,8 +417,6 @@
     margin-top: auto; 
     align-self: center; 
     animation: shimmerBg 4s infinite linear; 
-    width: 100%; 
-    max-width: 400px;
   }
   #ios-btn-create:active, .ios-btn-next:active { transform: scale(0.97); }
 
@@ -422,8 +425,6 @@
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 40px); /* Absolute to overlay, calc needed here */
-    max-width: 400px;
     display: none; 
   }
   .ios-btn-next.show { display: flex; animation: slideUpFade 0.3s ease-out forwards; }
@@ -597,8 +598,7 @@
       </div>
     </div>
 
-    <div style="flex-grow: 1; min-height: 40px;"></div> 
-
+    <!-- Кнопка "Создать" автоматически занимает правильное место внизу за счёт margin-top: auto -->
     <button id="ios-btn-create">Создать</button>
   </div>
 </div>
@@ -1765,12 +1765,12 @@ function setupPersistentCanvas() {
         hdBtn.id = 'ios-btn-download-all';
         hdBtn.className = 'ios-btn-next show';
         hdBtn.style.position = 'fixed';
-        hdBtn.style.bottom = '30px';
+        hdBtn.style.bottom = '40px';
         hdBtn.style.left = '50%';
         hdBtn.style.transform = 'translateX(-50%)';
         hdBtn.style.zIndex = '1000';
-        hdBtn.style.width = 'calc(100% - 40px)';
-        hdBtn.style.maxWidth = '400px';
+        hdBtn.style.width = 'calc(100% - 64px)';
+        hdBtn.style.maxWidth = '350px';
         hdBtn.style.height = '54px'; /* Синхронизируем толщину со "Стиль фона" */
         hdBtn.innerHTML = `Скачать <svg style="margin-left:8px; width:20px; height:20px" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
         
